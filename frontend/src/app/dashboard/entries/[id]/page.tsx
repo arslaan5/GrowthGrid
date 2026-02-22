@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -255,9 +256,11 @@ export default function EntryDetailPage() {
                   removed.
                 </p>
                 <div className="flex justify-end gap-2 mt-4">
-                  <Button variant="outline" size="sm">
-                    Cancel
-                  </Button>
+                  <DialogClose asChild>
+                    <Button variant="outline" size="sm">
+                      Cancel
+                    </Button>
+                  </DialogClose>
                   <Button
                     variant="destructive"
                     size="sm"
