@@ -76,9 +76,7 @@ async def get_summary(
     first_of_month = today.replace(day=1)
 
     total_entries = await analytics_repo.get_total_entries(user_id, db)
-    entries_this_month = await analytics_repo.get_entries_since(
-        user_id, first_of_month, db
-    )
+    entries_this_month = await analytics_repo.get_entries_since(user_id, first_of_month, db)
     distinct_dates = await analytics_repo.get_distinct_entry_dates(user_id, db)
     current_streak, longest_streak = _compute_streaks(distinct_dates)
     most_used_tag = await analytics_repo.get_most_used_tag(user_id, db)

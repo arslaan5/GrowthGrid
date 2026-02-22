@@ -82,9 +82,7 @@ async def create_entry(
         )
     await db.flush()
 
-    result = await db.execute(
-        select(Entry).options(*_eager_options()).where(Entry.id == entry.id)
-    )
+    result = await db.execute(select(Entry).options(*_eager_options()).where(Entry.id == entry.id))
     return result.scalar_one()
 
 
@@ -176,9 +174,7 @@ async def update_entry_fields(
 
     await db.flush()
 
-    result = await db.execute(
-        select(Entry).options(*_eager_options()).where(Entry.id == entry.id)
-    )
+    result = await db.execute(select(Entry).options(*_eager_options()).where(Entry.id == entry.id))
     return result.scalar_one()
 
 

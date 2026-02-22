@@ -113,8 +113,7 @@ export default function EntryDetailPage() {
       tags.join(",") !== entry.tags.map((t) => t.name).join(",") ||
       newFiles.length > 0);
 
-  const { guardedNavigate, showDialog, confirmLeave, cancelLeave } =
-    useUnsavedChanges(isDirty);
+  const { guardedNavigate, showDialog, confirmLeave, cancelLeave } = useUnsavedChanges(isDirty);
 
   const addTag = () => {
     const t = tagInput.trim().toLowerCase();
@@ -132,8 +131,7 @@ export default function EntryDetailPage() {
     }
   };
 
-  const removeLink = (idx: number) =>
-    setLinks(links.filter((_, i) => i !== idx));
+  const removeLink = (idx: number) => setLinks(links.filter((_, i) => i !== idx));
 
   const handleUpdate = async () => {
     if (!title.trim() || !content.trim()) {
@@ -142,7 +140,7 @@ export default function EntryDetailPage() {
     }
     setSaving(true);
     try {
-      const res = await api.put(`/entries/${id}`, {
+      const _res = await api.put(`/entries/${id}`, {
         date: format(date, "yyyy-MM-dd"),
         title: title.trim(),
         content: content.trim(),
@@ -169,8 +167,7 @@ export default function EntryDetailPage() {
     } catch (err: unknown) {
       const msg =
         err && typeof err === "object" && "response" in err
-          ? (err as { response: { data: { detail?: string } } }).response?.data
-              ?.detail
+          ? (err as { response: { data: { detail?: string } } }).response?.data?.detail
           : "Failed to update entry.";
       toast.error(msg || "Failed to update entry.");
     } finally {
@@ -198,11 +195,9 @@ export default function EntryDetailPage() {
         prev
           ? {
               ...prev,
-              attachments: prev.attachments.filter(
-                (a) => a.id !== attachmentId,
-              ),
+              attachments: prev.attachments.filter((a) => a.id !== attachmentId),
             }
-          : prev,
+          : prev
       );
       toast.success("Attachment deleted.");
     } catch {
@@ -219,26 +214,19 @@ export default function EntryDetailPage() {
   // ---------- VIEW MODE ----------
   if (!editing) {
     return (
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="mx-auto max-w-3xl space-y-6">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold tracking-tight truncate">
-              {entry.title}
-            </h1>
-            <p className="text-sm text-muted-foreground">
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-2xl font-bold tracking-tight">{entry.title}</h1>
+            <p className="text-muted-foreground text-sm">
               {format(parseISO(entry.date), "MMMM d, yyyy")}
             </p>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1"
-              onClick={() => setEditing(true)}
-            >
+            <Button variant="outline" size="sm" className="gap-1" onClick={() => setEditing(true)}>
               <Edit3 className="h-3 w-3" /> Edit
             </Button>
             <Dialog>
@@ -251,11 +239,10 @@ export default function EntryDetailPage() {
                 <DialogHeader>
                   <DialogTitle>Delete this entry?</DialogTitle>
                 </DialogHeader>
-                <p className="text-sm text-muted-foreground">
-                  This action cannot be undone. All attachments will also be
-                  removed.
+                <p className="text-muted-foreground text-sm">
+                  This action cannot be undone. All attachments will also be removed.
                 </p>
-                <div className="flex justify-end gap-2 mt-4">
+                <div className="mt-4 flex justify-end gap-2">
                   <DialogClose asChild>
                     <Button variant="outline" size="sm">
                       Cancel
@@ -288,7 +275,7 @@ export default function EntryDetailPage() {
 
         {/* Content (rendered markdown) */}
         <Card>
-          <CardContent className="py-6 prose prose-neutral dark:prose-invert max-w-none">
+          <CardContent className="prose prose-neutral dark:prose-invert max-w-none py-6">
             <ReactMarkdown>{entry.content}</ReactMarkdown>
           </CardContent>
         </Card>
@@ -297,7 +284,7 @@ export default function EntryDetailPage() {
         {entry.links.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
                 <Link2 className="h-4 w-4" /> Resource Links
               </CardTitle>
             </CardHeader>
@@ -308,7 +295,7 @@ export default function EntryDetailPage() {
                   href={lk.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-primary hover:underline"
+                  className="text-primary flex items-center gap-2 text-sm hover:underline"
                 >
                   <ExternalLink className="h-3 w-3" />
                   {lk.title}
@@ -322,7 +309,7 @@ export default function EntryDetailPage() {
         {entry.attachments.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
                 <FileText className="h-4 w-4" /> Attachments
               </CardTitle>
             </CardHeader>
@@ -333,12 +320,12 @@ export default function EntryDetailPage() {
                     href={a.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline truncate"
+                    className="text-primary truncate hover:underline"
                   >
                     {a.file_name}
                   </a>
                   <button
-                    className="ml-auto text-muted-foreground hover:text-destructive"
+                    className="text-muted-foreground hover:text-destructive ml-auto"
                     onClick={() => handleDeleteAttachment(a.id)}
                   >
                     <Trash2 className="h-3 w-3" />
@@ -354,7 +341,7 @@ export default function EntryDetailPage() {
 
   // ---------- EDIT MODE ----------
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => guardedNavigate()}>
           <ArrowLeft className="h-4 w-4" />
@@ -363,16 +350,13 @@ export default function EntryDetailPage() {
       </div>
 
       <Card>
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-6 pt-6">
           {/* Date */}
           <div className="space-y-2">
             <Label>Date</Label>
             <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
               <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-2 font-normal"
-                >
+                <Button variant="outline" className="w-full justify-start gap-2 font-normal">
                   <CalendarDays className="h-4 w-4" />
                   {format(date, "MMMM d, yyyy")}
                 </Button>
@@ -399,11 +383,7 @@ export default function EntryDetailPage() {
           {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="edit-title">Title</Label>
-            <Input
-              id="edit-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+            <Input id="edit-title" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
 
           {/* Content */}
@@ -435,17 +415,12 @@ export default function EntryDetailPage() {
                   }
                 }}
               />
-              <Button
-                type="button"
-                variant="secondary"
-                size="icon"
-                onClick={addTag}
-              >
+              <Button type="button" variant="secondary" size="icon" onClick={addTag}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
             {tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 {tags.map((t) => (
                   <Badge key={t} variant="secondary" className="gap-1">
                     {t}
@@ -458,23 +433,20 @@ export default function EntryDetailPage() {
             )}
             {/* Existing tag suggestions */}
             {existingTags.filter((t) => !tags.includes(t)).length > 0 && (
-              <div className="space-y-1 mt-2">
-                <p className="text-[11px] text-muted-foreground">
-                  Previously used:
-                </p>
+              <div className="mt-2 space-y-1">
+                <p className="text-muted-foreground text-[11px]">Previously used:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {existingTags
                     .filter(
                       (t) =>
                         !tags.includes(t) &&
-                        (!tagInput.trim() ||
-                          t.includes(tagInput.trim().toLowerCase())),
+                        (!tagInput.trim() || t.includes(tagInput.trim().toLowerCase()))
                     )
                     .map((t) => (
                       <Badge
                         key={t}
                         variant="outline"
-                        className="cursor-pointer text-[11px] hover:bg-accent transition-colors"
+                        className="hover:bg-accent cursor-pointer text-[11px] transition-colors"
                         onClick={() => {
                           setTags([...tags, t]);
                           setTagInput("");
@@ -493,7 +465,7 @@ export default function EntryDetailPage() {
           {/* Links */}
           <div className="space-y-2">
             <Label>Resource Links</Label>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Input
                 placeholder="Title"
                 value={linkTitle}
@@ -510,26 +482,19 @@ export default function EntryDetailPage() {
                   }
                 }}
               />
-              <Button
-                type="button"
-                variant="secondary"
-                size="icon"
-                onClick={addLink}
-              >
+              <Button type="button" variant="secondary" size="icon" onClick={addLink}>
                 <Link2 className="h-4 w-4" />
               </Button>
             </div>
             {links.length > 0 && (
-              <div className="space-y-1 mt-2">
+              <div className="mt-2 space-y-1">
                 {links.map((lk, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-sm">
-                    <Link2 className="h-3 w-3 text-muted-foreground" />
+                    <Link2 className="text-muted-foreground h-3 w-3" />
                     <span className="font-medium">{lk.title}</span>
-                    <span className="text-muted-foreground truncate">
-                      {lk.url}
-                    </span>
+                    <span className="text-muted-foreground truncate">{lk.url}</span>
                     <button className="ml-auto" onClick={() => removeLink(idx)}>
-                      <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                      <X className="text-muted-foreground hover:text-destructive h-3 w-3" />
                     </button>
                   </div>
                 ))}
@@ -545,10 +510,10 @@ export default function EntryDetailPage() {
               <Label>Existing Attachments</Label>
               {entry.attachments.map((a) => (
                 <div key={a.id} className="flex items-center gap-2 text-sm">
-                  <FileText className="h-3 w-3 text-muted-foreground" />
+                  <FileText className="text-muted-foreground h-3 w-3" />
                   <span className="truncate">{a.file_name}</span>
                   <button
-                    className="ml-auto text-muted-foreground hover:text-destructive"
+                    className="text-muted-foreground hover:text-destructive ml-auto"
                     onClick={() => handleDeleteAttachment(a.id)}
                   >
                     <Trash2 className="h-3 w-3" />
@@ -561,8 +526,8 @@ export default function EntryDetailPage() {
           {/* New files */}
           <div className="space-y-2">
             <Label>Add Attachments</Label>
-            <label className="cursor-pointer inline-block">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground border rounded-md px-3 py-2 hover:bg-accent transition-colors">
+            <label className="inline-block cursor-pointer">
+              <div className="text-muted-foreground hover:bg-accent flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors">
                 <Upload className="h-4 w-4" />
                 Choose files
               </div>
@@ -571,26 +536,23 @@ export default function EntryDetailPage() {
                 multiple
                 className="hidden"
                 onChange={(e) => {
-                  if (e.target.files)
-                    setNewFiles([...newFiles, ...Array.from(e.target.files)]);
+                  if (e.target.files) setNewFiles([...newFiles, ...Array.from(e.target.files)]);
                 }}
               />
             </label>
             {newFiles.length > 0 && (
-              <div className="space-y-1 mt-2">
+              <div className="mt-2 space-y-1">
                 {newFiles.map((f, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-sm">
                     <span className="truncate">{f.name}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       ({(f.size / 1024).toFixed(1)} KB)
                     </span>
                     <button
                       className="ml-auto"
-                      onClick={() =>
-                        setNewFiles(newFiles.filter((_, i) => i !== idx))
-                      }
+                      onClick={() => setNewFiles(newFiles.filter((_, i) => i !== idx))}
                     >
-                      <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                      <X className="text-muted-foreground hover:text-destructive h-3 w-3" />
                     </button>
                   </div>
                 ))}
@@ -601,11 +563,7 @@ export default function EntryDetailPage() {
       </Card>
 
       <div className="flex justify-end gap-3">
-        <Button
-          variant="outline"
-          onClick={() => guardedNavigate()}
-          disabled={saving}
-        >
+        <Button variant="outline" onClick={() => guardedNavigate()} disabled={saving}>
           Cancel
         </Button>
         <Button onClick={handleUpdate} disabled={saving} className="gap-1">
@@ -620,10 +578,10 @@ export default function EntryDetailPage() {
           <DialogHeader>
             <DialogTitle>Discard unsaved changes?</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             You have unsaved changes. If you leave now they will be lost.
           </p>
-          <div className="flex justify-end gap-2 mt-2">
+          <div className="mt-2 flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={cancelLeave}>
               Keep editing
             </Button>

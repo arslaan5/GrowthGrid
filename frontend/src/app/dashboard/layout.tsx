@@ -8,11 +8,7 @@ import { MobileHeader } from "@/components/mobile-header";
 import { KeyboardShortcutProvider } from "@/components/keyboard-shortcut-provider";
 import { Loader } from "@/components/loader";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -28,7 +24,7 @@ export default function DashboardLayout({
 
   return (
     <KeyboardShortcutProvider>
-      <div className="flex h-screen flex-col md:flex-row overflow-hidden">
+      <div className="flex h-screen flex-col overflow-hidden md:flex-row">
         <MobileHeader />
         <Sidebar />
         <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>

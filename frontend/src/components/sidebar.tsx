@@ -33,30 +33,25 @@ export function Sidebar() {
   const modLabel = useModLabel();
 
   return (
-    <aside className="hidden md:flex w-64 flex-col border-r bg-card">
+    <aside className="bg-card hidden w-64 flex-col border-r md:flex">
       {/* Brand */}
       <div className="flex items-center gap-2 px-6 py-5">
-        <Flame className="h-6 w-6 text-primary animate-pulse" />
+        <Flame className="text-primary h-6 w-6 animate-pulse" />
         <span className="text-lg font-bold">GrowthGrid</span>
       </div>
 
       <Separator />
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 space-y-1 px-3 py-4">
         {navItems.map((item) => {
           const active =
             item.href === "/dashboard"
               ? pathname === "/dashboard"
               : pathname.startsWith(item.href) &&
-                !(
-                  item.href === "/dashboard/entries" &&
-                  pathname.startsWith("/dashboard/entries/")
-                );
+                !(item.href === "/dashboard/entries" && pathname.startsWith("/dashboard/entries/"));
           const isEntriesExact = item.href === "/dashboard/entries";
-          const finalActive = isEntriesExact
-            ? pathname === "/dashboard/entries"
-            : active;
+          const finalActive = isEntriesExact ? pathname === "/dashboard/entries" : active;
           return (
             <Link key={item.href} href={item.href}>
               <span
@@ -65,13 +60,13 @@ export function Sidebar() {
                   "transition-all duration-150 hover:translate-x-0.5",
                   finalActive
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 <item.icon className="h-4 w-4 shrink-0 transition-transform duration-150 hover:scale-110" />
                 <span className="flex-1">{item.label}</span>
                 {item.href === "/dashboard/entries/new" && (
-                  <kbd className="hidden lg:inline text-[10px] opacity-60 border rounded px-1 py-0.5 font-mono">
+                  <kbd className="hidden rounded border px-1 py-0.5 font-mono text-[10px] opacity-60 lg:inline">
                     {modLabel}N
                   </kbd>
                 )}
@@ -84,7 +79,7 @@ export function Sidebar() {
       <Separator />
 
       {/* Footer */}
-      <div className="px-3 py-4 space-y-2">
+      <div className="space-y-2 px-3 py-4">
         <Button
           variant="ghost"
           size="sm"
@@ -92,18 +87,14 @@ export function Sidebar() {
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
         >
           <span className="animate-icon-spin-in">
-            {theme === "dark" ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </span>
           {theme === "dark" ? "Light mode" : "Dark mode"}
         </Button>
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start gap-3 text-destructive hover:text-destructive"
+          className="text-destructive hover:text-destructive w-full justify-start gap-3"
           onClick={() => logout()}
         >
           <LogOut className="h-4 w-4 transition-transform duration-150 hover:scale-110" />

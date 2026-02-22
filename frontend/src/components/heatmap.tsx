@@ -1,16 +1,10 @@
 "use client";
 
-import CalendarHeatmap, {
-  type ReactCalendarHeatmapValue,
-} from "react-calendar-heatmap";
+import CalendarHeatmap, { type ReactCalendarHeatmapValue } from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
 import { subYears, format } from "date-fns";
 import type { HeatmapDay } from "@/lib/types";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState, useMemo } from "react";
 
 type HeatmapValue = ReactCalendarHeatmapValue<string> & { count?: number };
@@ -82,11 +76,8 @@ export function Heatmap({ data }: HeatmapProps) {
                 showWeekdayLabels
                 onClick={(value: HeatmapValue | undefined) => {
                   if (value?.count) {
-                    const date =
-                      typeof value.date === "string" ? value.date : "";
-                    setTip(
-                      tip?.date === date ? null : { date, count: value.count },
-                    );
+                    const date = typeof value.date === "string" ? value.date : "";
+                    setTip(tip?.date === date ? null : { date, count: value.count });
                   } else {
                     setTip(null);
                   }
@@ -111,11 +102,10 @@ export function Heatmap({ data }: HeatmapProps) {
       </div>
 
       {/* Footer: legend + summary */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="text-muted-foreground flex items-center justify-between text-xs">
         <span>
-          {stats.activeDays} active day{stats.activeDays !== 1 ? "s" : ""} ·{" "}
-          {stats.totalEntries} entr{stats.totalEntries !== 1 ? "ies" : "y"} this
-          year
+          {stats.activeDays} active day{stats.activeDays !== 1 ? "s" : ""} · {stats.totalEntries}{" "}
+          entr{stats.totalEntries !== 1 ? "ies" : "y"} this year
         </span>
         <div className="flex items-center gap-1.5">
           <span>Less</span>

@@ -70,7 +70,7 @@ export function useUnsavedChanges(isDirty: boolean): UseUnsavedChangesReturn {
         else router.back();
       }
     },
-    [isDirty, router],
+    [isDirty, router]
   );
 
   const confirmLeave = useCallback(() => {

@@ -1,5 +1,6 @@
 """Backblaze B2 storage service via boto3 (S3-compatible API)."""
 
+import contextlib
 import uuid
 from io import BytesIO
 
@@ -68,7 +69,7 @@ async def upload_file(file: UploadFile, entry_id: uuid.UUID) -> tuple[str, str]:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"Failed to upload file to storage: {exc}",
-        )
+        ) from exc
 
     # Construct the public URL
     file_url = f"{settings.B2_ENDPOINT_URL}/{settings.B2_BUCKET_NAME}/{object_key}"
@@ -78,8 +79,5 @@ async def upload_file(file: UploadFile, entry_id: uuid.UUID) -> tuple[str, str]:
 async def delete_file(object_key: str) -> None:
     """Delete a file from B2. Silently ignores missing files."""
     s3 = _get_s3_client()
-    try:
+    with contextlib.suppress(ClientError):
         s3.delete_object(Bucket=settings.B2_BUCKET_NAME, Key=object_key)
-    except ClientError:
-        # Best-effort deletion — don't fail the request
-        pass

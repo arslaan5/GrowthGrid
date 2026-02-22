@@ -7,11 +7,7 @@ import { useRouter } from "next/navigation";
  * Global keyboard shortcuts:
  *  - Alt + N  → new entry
  */
-export function KeyboardShortcutProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function KeyboardShortcutProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {

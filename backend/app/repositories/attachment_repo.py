@@ -27,9 +27,7 @@ async def create_attachment(
     return attachment
 
 
-async def find_by_id_with_entry(
-    attachment_id: uuid.UUID, db: AsyncSession
-) -> Attachment | None:
+async def find_by_id_with_entry(attachment_id: uuid.UUID, db: AsyncSession) -> Attachment | None:
     """Return attachment with its parent entry eagerly loaded, or None."""
     result = await db.execute(
         select(Attachment)

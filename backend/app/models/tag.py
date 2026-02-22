@@ -29,12 +29,8 @@ entry_tags = Table(
 class Tag(Base):
     __tablename__ = "tags"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    name: Mapped[str] = mapped_column(
-        String(100), unique=True, nullable=False, index=True
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
 
     entries: Mapped[list["Entry"]] = relationship(  # noqa: F821
         secondary=entry_tags, back_populates="tags"

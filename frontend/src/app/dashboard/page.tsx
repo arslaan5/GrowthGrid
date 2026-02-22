@@ -105,11 +105,11 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Greeting & motivational banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-up">
+      <div className="animate-fade-up flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{getGreeting()}</h1>
           {summary && (
-            <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
+            <p className="text-muted-foreground mt-1 flex items-center gap-1.5 text-sm">
               <Sparkles className="h-3.5 w-3.5 text-yellow-500" />
               {getMotivationalMessage(summary.current_streak)}
             </p>
@@ -121,7 +121,7 @@ export default function DashboardPage() {
               <PenSquare className="h-4 w-4" /> New Entry
             </Button>
           </Link>
-          <span className="hidden lg:inline-flex items-center gap-1 text-[11px] text-muted-foreground border rounded-md px-2 py-1">
+          <span className="text-muted-foreground hidden items-center gap-1 rounded-md border px-2 py-1 text-[11px] lg:inline-flex">
             <Keyboard className="h-3 w-3" /> {modLabel}N
           </span>
         </div>
@@ -129,33 +129,33 @@ export default function DashboardPage() {
 
       {/* Summary cards */}
       {loadingSummary ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
           {Array.from({ length: 5 }).map((_, i) => (
             <Card key={i} className="py-0">
               <CardContent className="p-4">
-                <div className="h-10 rounded skeleton-shimmer" />
+                <div className="skeleton-shimmer h-10 rounded" />
               </CardContent>
             </Card>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
           {statCards.map((s, i) => (
             <Card
               key={s.label}
-              className={`py-0 hover:shadow-md cursor-default animate-fade-up stagger-${i + 1}`}
+              className={`animate-fade-up cursor-default py-0 hover:shadow-md stagger-${i + 1}`}
             >
-              <CardContent className="p-4 flex items-start gap-3">
+              <CardContent className="flex items-start gap-3 p-4">
                 <div
-                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted ${s.color} transition-transform duration-200 hover:scale-110`}
+                  className={`bg-muted mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${s.color} transition-transform duration-200 hover:scale-110`}
                 >
                   <s.icon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[11px] font-medium text-muted-foreground leading-none mb-1">
+                  <p className="text-muted-foreground mb-1 text-[11px] leading-none font-medium">
                     {s.label}
                   </p>
-                  <p className="text-lg font-bold leading-tight truncate animate-count-pop">
+                  <p className="animate-count-pop truncate text-lg leading-tight font-bold">
                     {s.value}
                   </p>
                 </div>
@@ -166,7 +166,7 @@ export default function DashboardPage() {
       )}
 
       {/* Heatmap */}
-      <Card className="py-4 animate-fade-up stagger-3">
+      <Card className="animate-fade-up stagger-3 py-4">
         <CardHeader className="pb-0">
           <CardTitle className="text-base">Learning Activity</CardTitle>
         </CardHeader>
@@ -189,14 +189,14 @@ export default function DashboardPage() {
           {loadingRecent ? (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-14 bg-muted rounded animate-pulse" />
+                <div key={i} className="bg-muted h-14 animate-pulse rounded" />
               ))}
             </div>
           ) : recent.length === 0 ? (
             <div className="py-10 text-center">
-              <BookOpen className="h-10 w-10 mx-auto text-muted-foreground mb-3 opacity-50" />
-              <p className="text-sm font-medium mb-1">No entries yet</p>
-              <p className="text-sm text-muted-foreground mb-4">
+              <BookOpen className="text-muted-foreground mx-auto mb-3 h-10 w-10 opacity-50" />
+              <p className="mb-1 text-sm font-medium">No entries yet</p>
+              <p className="text-muted-foreground mb-4 text-sm">
                 Your learning journey starts with a single entry.
               </p>
               <Link href="/dashboard/entries/new">
@@ -211,30 +211,26 @@ export default function DashboardPage() {
                 <div key={entry.id}>
                   <Link
                     href={`/dashboard/entries/${entry.id}`}
-                    className={`flex items-center justify-between py-3 px-2 rounded-md hover:bg-accent transition-all duration-150 group animate-fade-up stagger-${idx + 1}`}
+                    className={`hover:bg-accent group animate-fade-up flex items-center justify-between rounded-md px-2 py-3 transition-all duration-150 stagger-${idx + 1}`}
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium truncate group-hover:text-primary transition-colors">
+                      <p className="group-hover:text-primary truncate font-medium transition-colors">
                         {entry.title}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         {format(parseISO(entry.date), "MMM d, yyyy")}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                      <p className="text-muted-foreground mt-0.5 line-clamp-1 text-xs">
                         {entry.content.slice(0, 100)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 ml-3 shrink-0">
+                    <div className="ml-3 flex shrink-0 items-center gap-2">
                       {entry.tags.slice(0, 3).map((t) => (
-                        <Badge
-                          key={t.id}
-                          variant="secondary"
-                          className="text-[10px]"
-                        >
+                        <Badge key={t.id} variant="secondary" className="text-[10px]">
                           {t.name}
                         </Badge>
                       ))}
-                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-150" />
+                      <ArrowRight className="text-muted-foreground h-3.5 w-3.5 opacity-0 transition-all duration-150 group-hover:translate-x-0.5 group-hover:opacity-100" />
                     </div>
                   </Link>
                   {idx < recent.length - 1 && <Separator />}

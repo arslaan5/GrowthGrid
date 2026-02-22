@@ -32,10 +32,7 @@ interface LoaderProps {
   fullScreen?: boolean;
 }
 
-export function Loader({
-  message = "Loading…",
-  fullScreen = true,
-}: LoaderProps) {
+export function Loader({ message = "Loading…", fullScreen = true }: LoaderProps) {
   const [subtitle, setSubtitle] = useState(pickRandom);
 
   // Rotate subtitle every 4 seconds
@@ -50,27 +47,24 @@ export function Loader({
     <div
       className={
         fullScreen
-          ? "min-h-screen flex items-center justify-center"
+          ? "flex min-h-screen items-center justify-center"
           : "flex items-center justify-center py-20"
       }
     >
-      <div className="flex flex-col items-center gap-4 text-center px-6 max-w-sm">
+      <div className="flex max-w-sm flex-col items-center gap-4 px-6 text-center">
         {/* Animated logo */}
         <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-          <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Flame className="h-6 w-6 text-primary animate-pulse" />
+          <div className="bg-primary/20 absolute inset-0 animate-ping rounded-full" />
+          <div className="bg-primary/10 relative flex h-12 w-12 items-center justify-center rounded-full">
+            <Flame className="text-primary h-6 w-6 animate-pulse" />
           </div>
         </div>
 
         {/* Message */}
-        <p className="text-sm font-medium text-foreground">{message}</p>
+        <p className="text-foreground text-sm font-medium">{message}</p>
 
         {/* Motivational subtitle with crossfade */}
-        <p
-          key={subtitle}
-          className="text-xs text-muted-foreground italic animate-fade-in-scale"
-        >
+        <p key={subtitle} className="text-muted-foreground animate-fade-in-scale text-xs italic">
           &ldquo;{subtitle}&rdquo;
         </p>
       </div>

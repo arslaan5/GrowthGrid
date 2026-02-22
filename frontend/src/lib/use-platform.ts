@@ -7,6 +7,9 @@ export function useIsMac(): boolean {
   const [isMac, setIsMac] = useState(false);
 
   useEffect(() => {
+    // Reading navigator.userAgent inside an effect ensures client-only execution
+    // (avoids SSR mismatch). The one-time setState call is intentional.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMac(/mac/i.test(navigator.userAgent));
   }, []);
 

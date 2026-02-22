@@ -5,12 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import {
   LayoutDashboard,
@@ -40,9 +35,9 @@ export function MobileHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="md:hidden flex items-center justify-between border-b px-4 py-3 bg-card">
+    <header className="bg-card flex items-center justify-between border-b px-4 py-3 md:hidden">
       <div className="flex items-center gap-2">
-        <Flame className="h-5 w-5 text-primary animate-pulse" />
+        <Flame className="text-primary h-5 w-5 animate-pulse" />
         <span className="font-bold">GrowthGrid</span>
       </div>
       <Sheet open={open} onOpenChange={setOpen}>
@@ -52,22 +47,16 @@ export function MobileHeader() {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">
-          <SheetTitle className="px-6 py-5 text-lg font-bold">
-            GrowthGrid
-          </SheetTitle>
+          <SheetTitle className="px-6 py-5 text-lg font-bold">GrowthGrid</SheetTitle>
           <Separator />
-          <nav className="flex-1 px-3 py-4 space-y-1">
+          <nav className="flex-1 space-y-1 px-3 py-4">
             {navItems.map((item, idx) => {
               const active =
                 item.href === "/dashboard"
                   ? pathname === "/dashboard"
                   : pathname.startsWith(item.href);
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                >
+                <Link key={item.href} href={item.href} onClick={() => setOpen(false)}>
                   <span
                     className={cn(
                       "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
@@ -79,7 +68,7 @@ export function MobileHeader() {
                       idx === 3 && "stagger-4",
                       active
                         ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     )}
                   >
                     <item.icon className="h-4 w-4 shrink-0 transition-transform duration-150 hover:scale-110" />
@@ -90,7 +79,7 @@ export function MobileHeader() {
             })}
           </nav>
           <Separator />
-          <div className="px-3 py-4 space-y-2">
+          <div className="space-y-2 px-3 py-4">
             <Button
               variant="ghost"
               size="sm"
@@ -98,18 +87,14 @@ export function MobileHeader() {
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
               <span className="animate-icon-spin-in">
-                {theme === "dark" ? (
-                  <Sun className="h-4 w-4" />
-                ) : (
-                  <Moon className="h-4 w-4" />
-                )}
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </span>
               {theme === "dark" ? "Light mode" : "Dark mode"}
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="w-full justify-start gap-3 text-destructive"
+              className="text-destructive w-full justify-start gap-3"
               onClick={() => logout()}
             >
               <LogOut className="h-4 w-4" />

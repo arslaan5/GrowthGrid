@@ -1,0 +1,66 @@
+repos:
+  # ── General ────────────────────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  # ── Backend: ruff (lint + format) ──────────────────────────────────────────
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.2
+    hooks:
+      # Run ruff linter and apply safe fixes (pre-commit stage)
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]
+        files: ^backend/
+        stages: [pre-commit]
+      # Run ruff formatter (pre-commit stage)
+      - id: ruff-format
+        files: ^backend/
+        stages: [pre-commit]
+
+  # ── Frontend: Prettier (format) ────────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: prettier
+        name: prettier (frontend)
+        language: system
+        entry: cmd /c "cd frontend && npx prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\""
+        pass_filenames: false
+        files: ^frontend/src/
+        stages: [pre-commit]
+
+      # ── Frontend: ESLint ──────────────────────────────────────────────────
+      - id: eslint
+        name: eslint (frontend)
+        language: system
+        entry: cmd /c "cd frontend && npx eslint --fix"
+        types_or: [ts, tsx, javascript, jsx]
+        files: ^frontend/src/
+        pass_filenames: false
+        stages: [pre-commit]
+
+      # ── Backend: tests (pre-push stage) ───────────────────────────────────
+      - id: backend-tests
+        name: backend pytest (pre-push)
+        language: system
+        entry: uv run --directory backend pytest backend/tests -x -q
+        pass_filenames: false
+        stages: [pre-push]
+
+      # ── Frontend: build check (pre-push stage) ────────────────────────────
+      - id: frontend-build
+        name: frontend build check (pre-push)
+        language: system
+        entry: cmd /c "cd frontend && npm run build"
+        pass_filenames: false
+        stages: [pre-push]

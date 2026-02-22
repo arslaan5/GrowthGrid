@@ -32,9 +32,7 @@ async def get_total_entries(user_id: uuid.UUID, db: AsyncSession) -> int:
 async def get_entries_since(user_id: uuid.UUID, since: date, db: AsyncSession) -> int:
     """Return count of entries on or after `since` date."""
     result = await db.execute(
-        select(func.count())
-        .select_from(Entry)
-        .where(Entry.user_id == user_id, Entry.date >= since)
+        select(func.count()).select_from(Entry).where(Entry.user_id == user_id, Entry.date >= since)
     )
     return result.scalar_one()
 
@@ -42,10 +40,7 @@ async def get_entries_since(user_id: uuid.UUID, since: date, db: AsyncSession) -
 async def get_distinct_entry_dates(user_id: uuid.UUID, db: AsyncSession) -> list[date]:
     """Return distinct entry dates for the user, sorted descending."""
     result = await db.execute(
-        select(Entry.date)
-        .where(Entry.user_id == user_id)
-        .distinct()
-        .order_by(desc(Entry.date))
+        select(Entry.date).where(Entry.user_id == user_id).distinct().order_by(desc(Entry.date))
     )
     return [row[0] for row in result.all()]
 

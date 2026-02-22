@@ -7,13 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
 export default function LoginPage() {
@@ -38,8 +32,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md animate-fade-up">
+    <div className="bg-background flex min-h-screen items-center justify-center px-4">
+      <Card className="animate-fade-up w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">GrowthGrid</CardTitle>
           <CardDescription>Sign in to your learning journal</CardDescription>
@@ -74,11 +68,11 @@ export default function LoginPage() {
               {loading ? "Signing in…" : "Sign in"}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
             <Link
               href="/register"
-              className="text-primary underline underline-offset-4 hover:text-primary/80"
+              className="text-primary hover:text-primary/80 underline underline-offset-4"
             >
               Register
             </Link>
