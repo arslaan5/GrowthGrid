@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import type { Entry } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +10,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import {
   BookOpen,
@@ -17,11 +32,16 @@ import {
   ArrowRight,
   ArrowLeft,
   SlidersHorizontal,
+  MoreHorizontal,
+  Edit3,
+  Trash2,
+  ExternalLink,
 } from "lucide-react";
 
 const PAGE_SIZE = 20;
 
 export default function EntriesListPage() {
+  const router = useRouter();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -31,6 +51,10 @@ export default function EntriesListPage() {
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<string[]>([]);
+
+  // Delete confirmation
+  const [deleteTarget, setDeleteTarget] = useState<Entry | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchEntries = useCallback(async () => {
     setLoading(true);
@@ -69,6 +93,21 @@ export default function EntriesListPage() {
   }, [search, activeTag]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/entries/${deleteTarget.id}`);
+      toast.success("Entry deleted.");
+      setDeleteTarget(null);
+      fetchEntries();
+    } catch {
+      toast.error("Failed to delete entry.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -134,7 +173,7 @@ export default function EntriesListPage() {
       )}
 
       {/* Entry list */}
-      <Card>
+      <Card className="py-0">
         <CardContent className="p-0">
           {loading ? (
             <div className="space-y-0 divide-y">
@@ -164,12 +203,15 @@ export default function EntriesListPage() {
           ) : (
             <div className="divide-y">
               {entries.map((entry) => (
-                <Link
+                <div
                   key={entry.id}
-                  href={`/dashboard/entries/${entry.id}`}
-                  className="flex items-start justify-between px-4 py-4 hover:bg-accent/50 transition-colors group"
+                  className="flex items-start gap-3 px-4 py-4 hover:bg-accent/50 transition-colors group"
                 >
-                  <div className="min-w-0 flex-1">
+                  {/* Clickable main content area */}
+                  <Link
+                    href={`/dashboard/entries/${entry.id}`}
+                    className="min-w-0 flex-1"
+                  >
                     <p className="font-medium truncate group-hover:text-primary transition-colors">
                       {entry.title}
                     </p>
@@ -179,24 +221,68 @@ export default function EntriesListPage() {
                     <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
                       {entry.content.slice(0, 120)}
                     </p>
-                  </div>
-                  <div className="flex items-center gap-2 ml-4 shrink-0 pt-1">
-                    {entry.tags.slice(0, 3).map((t) => (
-                      <Badge
-                        key={t.id}
-                        variant="secondary"
-                        className="text-[10px]"
-                      >
-                        {t.name}
-                      </Badge>
-                    ))}
-                    {entry.tags.length > 3 && (
-                      <span className="text-[10px] text-muted-foreground">
-                        +{entry.tags.length - 3}
-                      </span>
+                    {entry.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {entry.tags.slice(0, 3).map((t) => (
+                          <Badge
+                            key={t.id}
+                            variant="secondary"
+                            className="text-[10px]"
+                          >
+                            {t.name}
+                          </Badge>
+                        ))}
+                        {entry.tags.length > 3 && (
+                          <span className="text-[10px] text-muted-foreground">
+                            +{entry.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
                     )}
-                  </div>
-                </Link>
+                  </Link>
+
+                  {/* Action menu */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Actions</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuItem
+                        onClick={() =>
+                          router.push(`/dashboard/entries/${entry.id}`)
+                        }
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        View
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          router.push(
+                            `/dashboard/entries/${entry.id}?edit=true`,
+                          )
+                        }
+                      >
+                        <Edit3 className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => setDeleteTarget(entry)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               ))}
             </div>
           )}
@@ -230,6 +316,43 @@ export default function EntriesListPage() {
           </div>
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete entry?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">
+              &ldquo;{deleteTarget?.title}&rdquo;
+            </span>{" "}
+            will be permanently deleted along with its attachments. This cannot
+            be undone.
+          </p>
+          <div className="flex justify-end gap-2 mt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDeleteTarget(null)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting…" : "Delete"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

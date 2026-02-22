@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import type { Entry, LinkPayload } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,7 @@ import {
 export default function EntryDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [entry, setEntry] = useState<Entry | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -78,6 +79,10 @@ export default function EntryDetailPage() {
         const res = await api.get(`/entries/${id}`);
         setEntry(res.data);
         populateEditState(res.data);
+        // Open in edit mode if ?edit=true
+        if (searchParams.get("edit") === "true") {
+          setEditing(true);
+        }
       } catch {
         toast.error("Entry not found.");
         router.replace("/dashboard");
@@ -86,7 +91,7 @@ export default function EntryDetailPage() {
       }
     };
     load();
-  }, [id, router]);
+  }, [id, router, searchParams]);
 
   const populateEditState = (e: Entry) => {
     setDate(parseISO(e.date));
