@@ -44,7 +44,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md animate-fade-up">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
           <CardDescription>
@@ -62,6 +62,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="transition-all duration-200 focus:scale-[1.01]"
               />
             </div>
             <div className="space-y-2">
@@ -74,6 +75,7 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
+                className="transition-all duration-200 focus:scale-[1.01]"
               />
             </div>
             <div className="space-y-2">
@@ -86,6 +88,7 @@ export default function RegisterPage() {
                 onChange={(e) => setConfirm(e.target.value)}
                 required
                 minLength={6}
+                className="transition-all duration-200 focus:scale-[1.01]"
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>

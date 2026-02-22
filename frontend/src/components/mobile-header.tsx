@@ -42,7 +42,7 @@ export function MobileHeader() {
   return (
     <header className="md:hidden flex items-center justify-between border-b px-4 py-3 bg-card">
       <div className="flex items-center gap-2">
-        <Flame className="h-5 w-5 text-primary" />
+        <Flame className="h-5 w-5 text-primary animate-pulse" />
         <span className="font-bold">GrowthGrid</span>
       </div>
       <Sheet open={open} onOpenChange={setOpen}>
@@ -57,7 +57,7 @@ export function MobileHeader() {
           </SheetTitle>
           <Separator />
           <nav className="flex-1 px-3 py-4 space-y-1">
-            {navItems.map((item) => {
+            {navItems.map((item, idx) => {
               const active =
                 item.href === "/dashboard"
                   ? pathname === "/dashboard"
@@ -70,13 +70,19 @@ export function MobileHeader() {
                 >
                   <span
                     className={cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+                      "transition-all duration-150 hover:translate-x-0.5",
+                      "animate-fade-up",
+                      idx === 0 && "stagger-1",
+                      idx === 1 && "stagger-2",
+                      idx === 2 && "stagger-3",
+                      idx === 3 && "stagger-4",
                       active
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className="h-4 w-4 shrink-0 transition-transform duration-150 hover:scale-110" />
                     {item.label}
                   </span>
                 </Link>
@@ -91,11 +97,13 @@ export function MobileHeader() {
               className="w-full justify-start gap-3"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
+              <span className="animate-icon-spin-in">
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </span>
               {theme === "dark" ? "Light mode" : "Dark mode"}
             </Button>
             <Button

@@ -105,7 +105,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Greeting & motivational banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-up">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{getGreeting()}</h1>
           {summary && (
@@ -131,23 +131,23 @@ export default function DashboardPage() {
       {loadingSummary ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i} className="animate-pulse py-0">
+            <Card key={i} className="py-0">
               <CardContent className="p-4">
-                <div className="h-10 bg-muted rounded" />
+                <div className="h-10 rounded skeleton-shimmer" />
               </CardContent>
             </Card>
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {statCards.map((s) => (
+          {statCards.map((s, i) => (
             <Card
               key={s.label}
-              className="py-0 transition-shadow hover:shadow-md"
+              className={`py-0 hover:shadow-md cursor-default animate-fade-up stagger-${i + 1}`}
             >
               <CardContent className="p-4 flex items-start gap-3">
                 <div
-                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted ${s.color}`}
+                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted ${s.color} transition-transform duration-200 hover:scale-110`}
                 >
                   <s.icon className="h-4 w-4" />
                 </div>
@@ -155,7 +155,7 @@ export default function DashboardPage() {
                   <p className="text-[11px] font-medium text-muted-foreground leading-none mb-1">
                     {s.label}
                   </p>
-                  <p className="text-lg font-bold leading-tight truncate">
+                  <p className="text-lg font-bold leading-tight truncate animate-count-pop">
                     {s.value}
                   </p>
                 </div>
@@ -166,7 +166,7 @@ export default function DashboardPage() {
       )}
 
       {/* Heatmap */}
-      <Card className="py-4">
+      <Card className="py-4 animate-fade-up stagger-3">
         <CardHeader className="pb-0">
           <CardTitle className="text-base">Learning Activity</CardTitle>
         </CardHeader>
@@ -176,7 +176,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* Recent entries */}
-      <Card>
+      <Card className="animate-fade-up stagger-4">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">Recent Entries</CardTitle>
           <Link href="/dashboard/entries">
@@ -211,7 +211,7 @@ export default function DashboardPage() {
                 <div key={entry.id}>
                   <Link
                     href={`/dashboard/entries/${entry.id}`}
-                    className="flex items-center justify-between py-3 px-2 rounded-md hover:bg-accent transition-colors group"
+                    className={`flex items-center justify-between py-3 px-2 rounded-md hover:bg-accent transition-all duration-150 group animate-fade-up stagger-${idx + 1}`}
                   >
                     <div className="min-w-0 flex-1">
                       <p className="font-medium truncate group-hover:text-primary transition-colors">
@@ -234,6 +234,7 @@ export default function DashboardPage() {
                           {t.name}
                         </Badge>
                       ))}
+                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-150" />
                     </div>
                   </Link>
                   {idx < recent.length - 1 && <Separator />}

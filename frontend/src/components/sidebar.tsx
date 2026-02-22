@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useModLabel } from "@/lib/use-platform";
+
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/entries", label: "Entries", icon: BookOpen },
@@ -35,7 +36,7 @@ export function Sidebar() {
     <aside className="hidden md:flex w-64 flex-col border-r bg-card">
       {/* Brand */}
       <div className="flex items-center gap-2 px-6 py-5">
-        <Flame className="h-6 w-6 text-primary" />
+        <Flame className="h-6 w-6 text-primary animate-pulse" />
         <span className="text-lg font-bold">GrowthGrid</span>
       </div>
 
@@ -52,7 +53,6 @@ export function Sidebar() {
                   item.href === "/dashboard/entries" &&
                   pathname.startsWith("/dashboard/entries/")
                 );
-          // Special-case: /dashboard/entries is only active for exact /dashboard/entries path
           const isEntriesExact = item.href === "/dashboard/entries";
           const finalActive = isEntriesExact
             ? pathname === "/dashboard/entries"
@@ -61,13 +61,14 @@ export function Sidebar() {
             <Link key={item.href} href={item.href}>
               <span
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+                  "transition-all duration-150 hover:translate-x-0.5",
                   finalActive
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                 )}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-4 w-4 shrink-0 transition-transform duration-150 hover:scale-110" />
                 <span className="flex-1">{item.label}</span>
                 {item.href === "/dashboard/entries/new" && (
                   <kbd className="hidden lg:inline text-[10px] opacity-60 border rounded px-1 py-0.5 font-mono">
@@ -90,11 +91,13 @@ export function Sidebar() {
           className="w-full justify-start gap-3"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
         >
-          {theme === "dark" ? (
-            <Sun className="h-4 w-4" />
-          ) : (
-            <Moon className="h-4 w-4" />
-          )}
+          <span className="animate-icon-spin-in">
+            {theme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </span>
           {theme === "dark" ? "Light mode" : "Dark mode"}
         </Button>
         <Button
@@ -103,7 +106,7 @@ export function Sidebar() {
           className="w-full justify-start gap-3 text-destructive hover:text-destructive"
           onClick={() => logout()}
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-4 w-4 transition-transform duration-150 hover:scale-110" />
           Sign out
         </Button>
       </div>

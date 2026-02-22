@@ -66,10 +66,10 @@ export function Loader({
         {/* Message */}
         <p className="text-sm font-medium text-foreground">{message}</p>
 
-        {/* Motivational subtitle with fade transition */}
+        {/* Motivational subtitle with crossfade */}
         <p
           key={subtitle}
-          className="text-xs text-muted-foreground italic animate-fade-in"
+          className="text-xs text-muted-foreground italic animate-fade-in-scale"
         >
           &ldquo;{subtitle}&rdquo;
         </p>

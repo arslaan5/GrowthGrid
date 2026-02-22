@@ -111,7 +111,7 @@ export default function EntriesListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between animate-fade-up">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <BookOpen className="h-6 w-6" /> Entries
         </h1>
@@ -123,18 +123,18 @@ export default function EntriesListPage() {
       </div>
 
       {/* Search bar */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3 animate-fade-up stagger-1">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search entries by title or content…"
-            className="pl-9"
+            className="pl-9 transition-all duration-200 focus:scale-[1.01]"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           {search && (
             <button
-              className="absolute right-3 top-1/2 -translate-y-1/2"
+              className="absolute right-3 top-1/2 -translate-y-1/2 transition-transform duration-150 hover:scale-110 active:scale-95"
               onClick={() => setSearch("")}
             >
               <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
@@ -145,12 +145,12 @@ export default function EntriesListPage() {
 
       {/* Tag filter chips */}
       {allTags.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 animate-fade-up stagger-2">
           <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
           {activeTag && (
             <Badge
               variant="default"
-              className="gap-1 cursor-pointer"
+              className="gap-1 cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95"
               onClick={() => setActiveTag(null)}
             >
               {activeTag}
@@ -163,7 +163,7 @@ export default function EntriesListPage() {
               <Badge
                 key={tag}
                 variant="secondary"
-                className="cursor-pointer hover:bg-accent"
+                className="cursor-pointer transition-all duration-150 hover:bg-accent hover:scale-105 active:scale-95"
                 onClick={() => setActiveTag(tag)}
               >
                 {tag}
@@ -173,19 +173,19 @@ export default function EntriesListPage() {
       )}
 
       {/* Entry list */}
-      <Card className="py-0">
+      <Card className="py-0 animate-fade-up stagger-3">
         <CardContent className="p-0">
           {loading ? (
             <div className="space-y-0 divide-y">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-20 px-4 py-4 animate-pulse">
-                  <div className="h-4 bg-muted rounded w-1/3 mb-2" />
-                  <div className="h-3 bg-muted rounded w-2/3" />
+                <div key={i} className="h-20 px-4 py-4">
+                  <div className="h-4 skeleton-shimmer rounded w-1/3 mb-2" />
+                  <div className="h-3 skeleton-shimmer rounded w-2/3" />
                 </div>
               ))}
             </div>
           ) : entries.length === 0 ? (
-            <div className="py-16 text-center">
+            <div className="py-16 text-center animate-fade-in-scale">
               <BookOpen className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
               <p className="text-muted-foreground">
                 {search || activeTag
@@ -202,10 +202,11 @@ export default function EntriesListPage() {
             </div>
           ) : (
             <div className="divide-y">
-              {entries.map((entry) => (
+              {entries.map((entry, idx) => (
                 <div
                   key={entry.id}
-                  className="flex items-start gap-3 px-4 py-4 hover:bg-accent/50 transition-colors group"
+                  className={`flex items-start gap-3 px-4 py-4 hover:bg-accent/50 transition-all duration-150 group animate-fade-up`}
+                  style={{ animationDelay: `${Math.min(idx * 50, 300)}ms` }}
                 >
                   {/* Clickable main content area */}
                   <Link
