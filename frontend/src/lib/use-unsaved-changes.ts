@@ -19,6 +19,8 @@ export function useUnsavedChanges(isDirty: boolean): UseUnsavedChangesReturn {
   const [showDialog, setShowDialog] = useState(false);
   // undefined = go back | string = push href
   const pendingHref = useRef<string | undefined>(undefined);
+  // Set to true while we are intentionally navigating away so popstate is ignored
+  const confirming = useRef(false);
 
   // ── 1. Browser close / refresh ──────────────────────────────────────────
   useEffect(() => {
@@ -30,21 +32,31 @@ export function useUnsavedChanges(isDirty: boolean): UseUnsavedChangesReturn {
   }, [isDirty]);
 
   // ── 2. Browser back / forward button (popstate) ─────────────────────────
+  // Track how many sentinel entries we've pushed so confirmLeave can pop them all
+  const sentinelCount = useRef(0);
+
   useEffect(() => {
     if (!isDirty) return;
 
-    // Push a sentinel so the back press has something to cancel against
+    // Push ONE sentinel so the back press has something to cancel against
     window.history.pushState(null, "", window.location.href);
+    sentinelCount.current = 1;
 
     const handlePop = () => {
-      // Re-push to keep catching repeated back presses
+      // Skip if we triggered this pop ourselves via confirmLeave
+      if (confirming.current) return;
+      // Re-push ONE sentinel to keep catching repeated back presses
       window.history.pushState(null, "", window.location.href);
+      sentinelCount.current = 1;
       pendingHref.current = undefined; // undefined → go back after confirm
       setShowDialog(true);
     };
 
     window.addEventListener("popstate", handlePop);
-    return () => window.removeEventListener("popstate", handlePop);
+    return () => {
+      window.removeEventListener("popstate", handlePop);
+      sentinelCount.current = 0;
+    };
   }, [isDirty]);
 
   // ── 3. In-page UI navigation (back arrow button, cancel link) ───────────
@@ -62,11 +74,18 @@ export function useUnsavedChanges(isDirty: boolean): UseUnsavedChangesReturn {
   );
 
   const confirmLeave = useCallback(() => {
+    confirming.current = true;
     setShowDialog(false);
     const dest = pendingHref.current;
     pendingHref.current = undefined;
-    if (dest) router.push(dest);
-    else router.back();
+    if (dest) {
+      router.push(dest);
+    } else {
+      // Jump back past all sentinel entries + the actual page in one go
+      const steps = sentinelCount.current + 1;
+      sentinelCount.current = 0;
+      window.history.go(-steps);
+    }
   }, [router]);
 
   const cancelLeave = useCallback(() => {
