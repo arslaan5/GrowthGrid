@@ -92,7 +92,8 @@ export default function EntryDetailPage() {
       }
     };
     load();
-  }, [id, router, searchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const populateEditState = (e: Entry) => {
     setDate(parseISO(e.date));
