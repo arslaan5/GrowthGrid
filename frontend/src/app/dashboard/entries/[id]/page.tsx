@@ -57,6 +57,20 @@ export default function EntryDetailPage() {
   const [linkUrl, setLinkUrl] = useState("");
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [existingTags, setExistingTags] = useState<string[]>([]);
+
+  // Fetch all previously-used tags
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const res = await api.get("/entries/tags");
+        setExistingTags(res.data);
+      } catch {
+        // silently ignore
+      }
+    };
+    fetchTags();
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -425,6 +439,36 @@ export default function EntryDetailPage() {
                     </button>
                   </Badge>
                 ))}
+              </div>
+            )}
+            {/* Existing tag suggestions */}
+            {existingTags.filter((t) => !tags.includes(t)).length > 0 && (
+              <div className="space-y-1 mt-2">
+                <p className="text-[11px] text-muted-foreground">
+                  Previously used:
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {existingTags
+                    .filter(
+                      (t) =>
+                        !tags.includes(t) &&
+                        (!tagInput.trim() ||
+                          t.includes(tagInput.trim().toLowerCase())),
+                    )
+                    .map((t) => (
+                      <Badge
+                        key={t}
+                        variant="outline"
+                        className="cursor-pointer text-[11px] hover:bg-accent transition-colors"
+                        onClick={() => {
+                          setTags([...tags, t]);
+                          setTagInput("");
+                        }}
+                      >
+                        + {t}
+                      </Badge>
+                    ))}
+                </div>
               </div>
             )}
           </div>

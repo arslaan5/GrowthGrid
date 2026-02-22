@@ -3,7 +3,7 @@
 import uuid
 from datetime import date as date_type
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, distinct, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -186,3 +186,18 @@ async def delete_entry(entry: Entry, db: AsyncSession) -> None:
     """Delete an entry from the database."""
     await db.delete(entry)
     await db.flush()
+
+
+# ------------------------------------------------------------------ tags (user-scoped)
+
+
+async def list_user_tags(user_id: uuid.UUID, db: AsyncSession) -> list[str]:
+    """Return sorted distinct tag names used by a given user."""
+    result = await db.execute(
+        select(distinct(Tag.name))
+        .join(entry_tags, Tag.id == entry_tags.c.tag_id)
+        .join(Entry, Entry.id == entry_tags.c.entry_id)
+        .where(Entry.user_id == user_id)
+        .order_by(Tag.name)
+    )
+    return list(result.scalars().all())

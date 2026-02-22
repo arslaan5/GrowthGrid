@@ -103,3 +103,14 @@ async def delete_entry(
     """Delete an entry. Raises 404 if not found / not owned."""
     entry = await get_entry_by_id(entry_id, user_id, db)
     await entry_repo.delete_entry(entry, db)
+
+
+# ------------------------------------------------------------------ tags
+
+
+async def list_user_tags(
+    user_id: uuid.UUID,
+    db: AsyncSession,
+) -> list[str]:
+    """Return all distinct tag names the user has ever used."""
+    return await entry_repo.list_user_tags(user_id, db)

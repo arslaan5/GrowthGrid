@@ -20,6 +20,7 @@ from app.services.entry_service import (
     delete_entry,
     get_entry_by_id,
     list_entries,
+    list_user_tags,
     update_entry,
 )
 
@@ -56,6 +57,15 @@ async def list_all(
         limit=limit,
     )
     return EntryListResponse(entries=entries, total=total)
+
+
+@router.get("/tags", response_model=list[str])
+async def list_tags(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return all distinct tag names used by the current user."""
+    return await list_user_tags(current_user.id, db)
 
 
 @router.get("/{entry_id}", response_model=EntryResponse)
