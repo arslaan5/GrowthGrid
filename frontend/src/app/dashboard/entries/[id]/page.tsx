@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import { Loader } from "@/components/loader";
+import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
 import {
   ArrowLeft,
   CalendarDays,
@@ -100,6 +101,18 @@ export default function EntryDetailPage() {
     setTags(e.tags.map((t) => t.name));
     setLinks(e.links.map((lk) => ({ title: lk.title, url: lk.url })));
   };
+
+  // Track unsaved changes in edit mode
+  const isDirty =
+    editing &&
+    entry !== null &&
+    (title !== entry.title ||
+      content !== entry.content ||
+      tags.join(",") !== entry.tags.map((t) => t.name).join(",") ||
+      newFiles.length > 0);
+
+  const { guardedNavigate, showDialog, confirmLeave, cancelLeave } =
+    useUnsavedChanges(isDirty);
 
   const addTag = () => {
     const t = tagInput.trim().toLowerCase();
@@ -339,14 +352,7 @@ export default function EntryDetailPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            setEditing(false);
-            if (entry) populateEditState(entry);
-          }}
-        >
+        <Button variant="ghost" size="icon" onClick={() => guardedNavigate()}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-bold tracking-tight">Edit Entry</h1>
@@ -593,10 +599,7 @@ export default function EntryDetailPage() {
       <div className="flex justify-end gap-3">
         <Button
           variant="outline"
-          onClick={() => {
-            setEditing(false);
-            if (entry) populateEditState(entry);
-          }}
+          onClick={() => guardedNavigate()}
           disabled={saving}
         >
           Cancel
@@ -606,6 +609,26 @@ export default function EntryDetailPage() {
           {saving ? "Saving…" : "Save Changes"}
         </Button>
       </div>
+
+      {/* Unsaved changes confirmation dialog */}
+      <Dialog open={showDialog} onOpenChange={(open) => !open && cancelLeave()}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Discard unsaved changes?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            You have unsaved changes. If you leave now they will be lost.
+          </p>
+          <div className="flex justify-end gap-2 mt-2">
+            <Button variant="outline" size="sm" onClick={cancelLeave}>
+              Keep editing
+            </Button>
+            <Button variant="destructive" size="sm" onClick={confirmLeave}>
+              Discard & leave
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

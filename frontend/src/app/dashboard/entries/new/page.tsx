@@ -30,6 +30,7 @@ import {
   ArrowLeft,
   Save,
 } from "lucide-react";
+import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
 
 export default function NewEntryPage() {
   const router = useRouter();
@@ -67,16 +68,8 @@ export default function NewEntryPage() {
     links.length > 0 ||
     files.length > 0;
 
-  // Warn before navigating away with unsaved changes
-  useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault();
-      }
-    };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, [isDirty]);
+  const { guardedNavigate, showDialog, confirmLeave, cancelLeave } =
+    useUnsavedChanges(isDirty);
 
   const addTag = () => {
     const t = tagInput.trim().toLowerCase();
@@ -147,7 +140,7 @@ export default function NewEntryPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <Button variant="ghost" size="icon" onClick={() => guardedNavigate()}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-bold tracking-tight">New Entry</h1>
@@ -384,7 +377,7 @@ export default function NewEntryPage() {
       <div className="flex justify-end gap-3">
         <Button
           variant="outline"
-          onClick={() => router.back()}
+          onClick={() => guardedNavigate()}
           disabled={saving}
         >
           Cancel
@@ -394,6 +387,26 @@ export default function NewEntryPage() {
           {saving ? "Saving…" : "Save Entry"}
         </Button>
       </div>
+
+      {/* Unsaved changes confirmation dialog */}
+      <Dialog open={showDialog} onOpenChange={(open) => !open && cancelLeave()}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Discard unsaved changes?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            You have unsaved changes. If you leave now they will be lost.
+          </p>
+          <div className="flex justify-end gap-2 mt-2">
+            <Button variant="outline" size="sm" onClick={cancelLeave}>
+              Keep editing
+            </Button>
+            <Button variant="destructive" size="sm" onClick={confirmLeave}>
+              Discard & leave
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
