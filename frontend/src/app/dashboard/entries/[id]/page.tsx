@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import ReactMarkdown from "react-markdown";
+import { Loader } from "@/components/loader";
 import {
   ArrowLeft,
   CalendarDays,
@@ -176,13 +177,7 @@ export default function EntryDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="animate-pulse text-muted-foreground">
-          Loading entry…
-        </div>
-      </div>
-    );
+    return <Loader message="Loading entry…" fullScreen={false} />;
   }
 
   if (!entry) return null;

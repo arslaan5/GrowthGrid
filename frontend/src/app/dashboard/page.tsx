@@ -16,9 +16,27 @@ import {
   CalendarDays,
   PenSquare,
   ArrowRight,
+  Sparkles,
+  Keyboard,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Heatmap } from "@/components/heatmap";
+import { useModLabel } from "@/lib/use-platform";
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function getMotivationalMessage(streak: number): string {
+  if (streak === 0) return "Start a new streak today — every day counts!";
+  if (streak === 1) return "First entry logged — great start! 🎉";
+  if (streak < 7) return `${streak}-day streak! You're building a habit 💪`;
+  if (streak < 30) return `${streak} days in a row — you're on fire! 🔥🔥`;
+  return `${streak}-day streak — absolutely incredible! 🏆`;
+}
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -26,6 +44,7 @@ export default function DashboardPage() {
   const [recent, setRecent] = useState<Entry[]>([]);
   const [loadingSummary, setLoadingSummary] = useState(true);
   const [loadingRecent, setLoadingRecent] = useState(true);
+  const modLabel = useModLabel();
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -85,23 +104,36 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Page title */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <Link href="/dashboard/entries/new">
-          <Button size="sm" className="gap-1">
-            <PenSquare className="h-4 w-4" /> New Entry
-          </Button>
-        </Link>
+      {/* Greeting & motivational banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{getGreeting()}</h1>
+          {summary && (
+            <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-yellow-500" />
+              {getMotivationalMessage(summary.current_streak)}
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Link href="/dashboard/entries/new">
+            <Button size="sm" className="gap-1">
+              <PenSquare className="h-4 w-4" /> New Entry
+            </Button>
+          </Link>
+          <span className="hidden lg:inline-flex items-center gap-1 text-[11px] text-muted-foreground border rounded-md px-2 py-1">
+            <Keyboard className="h-3 w-3" /> {modLabel}N
+          </span>
+        </div>
       </div>
 
       {/* Summary cards */}
       {loadingSummary ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="py-6">
-                <div className="h-8 bg-muted rounded" />
+            <Card key={i} className="animate-pulse py-0">
+              <CardContent className="p-4">
+                <div className="h-10 bg-muted rounded" />
               </CardContent>
             </Card>
           ))}
@@ -109,15 +141,24 @@ export default function DashboardPage() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {statCards.map((s) => (
-            <Card key={s.label}>
-              <CardContent className="py-5">
-                <div className="flex items-center gap-2 mb-1">
-                  <s.icon className={`h-4 w-4 ${s.color}`} />
-                  <span className="text-xs text-muted-foreground">
-                    {s.label}
-                  </span>
+            <Card
+              key={s.label}
+              className="py-0 transition-shadow hover:shadow-md"
+            >
+              <CardContent className="p-4 flex items-start gap-3">
+                <div
+                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted ${s.color}`}
+                >
+                  <s.icon className="h-4 w-4" />
                 </div>
-                <p className="text-xl font-semibold">{s.value}</p>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium text-muted-foreground leading-none mb-1">
+                    {s.label}
+                  </p>
+                  <p className="text-lg font-bold leading-tight truncate">
+                    {s.value}
+                  </p>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -125,8 +166,8 @@ export default function DashboardPage() {
       )}
 
       {/* Heatmap */}
-      <Card>
-        <CardHeader>
+      <Card className="py-4">
+        <CardHeader className="pb-0">
           <CardTitle className="text-base">Learning Activity</CardTitle>
         </CardHeader>
         <CardContent>
@@ -138,7 +179,7 @@ export default function DashboardPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">Recent Entries</CardTitle>
-          <Link href="/dashboard/calendar">
+          <Link href="/dashboard/entries">
             <Button variant="ghost" size="sm" className="gap-1 text-xs">
               View all <ArrowRight className="h-3 w-3" />
             </Button>
@@ -152,27 +193,35 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : recent.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">
-              No entries yet.{" "}
-              <Link
-                href="/dashboard/entries/new"
-                className="text-primary underline"
-              >
-                Write your first entry!
+            <div className="py-10 text-center">
+              <BookOpen className="h-10 w-10 mx-auto text-muted-foreground mb-3 opacity-50" />
+              <p className="text-sm font-medium mb-1">No entries yet</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                Your learning journey starts with a single entry.
+              </p>
+              <Link href="/dashboard/entries/new">
+                <Button size="sm" variant="outline" className="gap-1">
+                  <PenSquare className="h-3.5 w-3.5" /> Write your first entry
+                </Button>
               </Link>
-            </p>
+            </div>
           ) : (
             <div className="space-y-1">
               {recent.map((entry, idx) => (
                 <div key={entry.id}>
                   <Link
                     href={`/dashboard/entries/${entry.id}`}
-                    className="flex items-center justify-between py-3 px-2 rounded-md hover:bg-accent transition-colors"
+                    className="flex items-center justify-between py-3 px-2 rounded-md hover:bg-accent transition-colors group"
                   >
-                    <div className="min-w-0">
-                      <p className="font-medium truncate">{entry.title}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate group-hover:text-primary transition-colors">
+                        {entry.title}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {format(parseISO(entry.date), "MMM d, yyyy")}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                        {entry.content.slice(0, 100)}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 ml-3 shrink-0">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import type { LinkPayload } from "@/lib/types";
@@ -44,6 +44,25 @@ export default function NewEntryPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Track whether the form has been touched
+  const isDirty =
+    title.trim() !== "" ||
+    content.trim() !== "" ||
+    tags.length > 0 ||
+    links.length > 0 ||
+    files.length > 0;
+
+  // Warn before navigating away with unsaved changes
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
 
   const addTag = () => {
     const t = tagInput.trim().toLowerCase();
@@ -176,6 +195,9 @@ export default function NewEntryPage() {
               onChange={(e) => setContent(e.target.value)}
               className="font-mono text-sm"
             />
+            <p className="text-xs text-muted-foreground text-right">
+              {content.trim().split(/\s+/).filter(Boolean).length} words
+            </p>
           </div>
 
           <Separator />

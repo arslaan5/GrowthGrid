@@ -16,6 +16,7 @@ import {
   LayoutDashboard,
   PenSquare,
   CalendarDays,
+  BookOpen,
   LogOut,
   Sun,
   Moon,
@@ -27,6 +28,7 @@ import { useState } from "react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/entries", label: "Entries", icon: BookOpen },
   { href: "/dashboard/entries/new", label: "New Entry", icon: PenSquare },
   { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
 ];

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { Loader } from "@/components/loader";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -14,9 +15,5 @@ export default function Home() {
     }
   }, [user, loading, router]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-pulse text-muted-foreground">Loading…</div>
-    </div>
-  );
+  return <Loader message="Getting things ready…" />;
 }
