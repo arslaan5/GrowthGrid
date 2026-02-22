@@ -53,7 +53,7 @@ repos:
       - id: backend-tests
         name: backend pytest (pre-push)
         language: system
-        entry: uv run --directory backend pytest backend/tests -x -q
+        entry: uv run --directory backend pytest tests -x -q
         pass_filenames: false
         stages: [pre-push]
 
