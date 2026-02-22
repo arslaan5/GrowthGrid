@@ -5,7 +5,7 @@ import uuid
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import hash_password, verify_password, decode_token
+from app.core.security import decode_token, hash_password, verify_password
 from app.db.session import get_db
 from app.models.user import User
 from app.repositories import user_repo

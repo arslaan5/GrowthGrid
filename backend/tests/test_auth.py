@@ -1,6 +1,7 @@
 """Tests for auth API endpoints."""
 
 import uuid
+
 from httpx import AsyncClient
 
 

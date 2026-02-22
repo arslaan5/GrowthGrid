@@ -10,17 +10,17 @@ from app.db.session import get_db
 from app.models.user import User
 from app.schemas.entry import (
     EntryCreate,
-    EntryUpdate,
-    EntryResponse,
     EntryListResponse,
+    EntryResponse,
+    EntryUpdate,
 )
 from app.services.auth_service import get_current_user
 from app.services.entry_service import (
     create_entry,
+    delete_entry,
     get_entry_by_id,
     list_entries,
     update_entry,
-    delete_entry,
 )
 
 router = APIRouter(prefix="/entries", tags=["entries"])

@@ -9,7 +9,6 @@ from app.models.entry import Entry
 from app.repositories import entry_repo
 from app.schemas.entry import EntryCreate, EntryUpdate
 
-
 # ------------------------------------------------------------------ CRUD
 
 

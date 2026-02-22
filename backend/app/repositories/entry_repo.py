@@ -3,14 +3,13 @@
 import uuid
 from datetime import date as date_type
 
-from sqlalchemy import select, func, delete
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.entry import Entry
-from app.models.tag import Tag, entry_tags
 from app.models.link import Link
-
+from app.models.tag import Tag, entry_tags
 
 # ------------------------------------------------------------------ helpers
 
@@ -74,11 +73,13 @@ async def create_entry(
     await db.flush()
 
     for link_data in links:
-        db.add(Link(
-            entry_id=entry.id,
-            title=link_data["title"],
-            url=link_data["url"],
-        ))
+        db.add(
+            Link(
+                entry_id=entry.id,
+                title=link_data["title"],
+                url=link_data["url"],
+            )
+        )
     await db.flush()
 
     result = await db.execute(
@@ -165,11 +166,13 @@ async def update_entry_fields(
         await db.execute(delete(Link).where(Link.entry_id == entry.id))
         await db.flush()
         for link_data in links:
-            db.add(Link(
-                entry_id=entry.id,
-                title=link_data["title"],
-                url=link_data["url"],
-            ))
+            db.add(
+                Link(
+                    entry_id=entry.id,
+                    title=link_data["title"],
+                    url=link_data["url"],
+                )
+            )
 
     await db.flush()
 

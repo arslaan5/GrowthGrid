@@ -1,10 +1,9 @@
 """Pydantic schemas for journal entries."""
 
-import uuid
 import datetime as _dt
+import uuid
 
 from pydantic import BaseModel, Field
-
 
 # ---------- Nested create / response schemas ----------
 

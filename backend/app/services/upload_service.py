@@ -9,14 +9,14 @@ from app.core.config import settings
 from app.models.attachment import Attachment
 from app.repositories import attachment_repo
 from app.services.entry_service import get_entry_by_id
-from app.services.storage_service import upload_file, delete_file
+from app.services.storage_service import delete_file, upload_file
 
 
 def _extract_object_key(file_url: str) -> str:
     """Extract the S3 object key from the full URL."""
     prefix = f"{settings.B2_ENDPOINT_URL}/{settings.B2_BUCKET_NAME}/"
     if file_url.startswith(prefix):
-        return file_url[len(prefix):]
+        return file_url[len(prefix) :]
     return file_url.split(f"/{settings.B2_BUCKET_NAME}/", 1)[-1]
 
 

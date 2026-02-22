@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories import analytics_repo
 
-
 # ------------------------------------------------------------------ heatmap
 
 
