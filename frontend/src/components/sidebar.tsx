@@ -13,7 +13,7 @@ import {
   LogOut,
   Sun,
   Moon,
-  GraduationCap,
+  Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +32,7 @@ export function Sidebar() {
     <aside className="hidden md:flex w-64 flex-col border-r bg-card">
       {/* Brand */}
       <div className="flex items-center gap-2 px-6 py-5">
-        <GraduationCap className="h-6 w-6 text-primary" />
+        <Flame className="h-6 w-6 text-primary" />
         <span className="text-lg font-bold">GrowthGrid</span>
       </div>
 

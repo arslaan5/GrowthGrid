@@ -20,7 +20,7 @@ import {
   Sun,
   Moon,
   Menu,
-  GraduationCap,
+  Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -40,7 +40,7 @@ export function MobileHeader() {
   return (
     <header className="md:hidden flex items-center justify-between border-b px-4 py-3 bg-card">
       <div className="flex items-center gap-2">
-        <GraduationCap className="h-5 w-5 text-primary" />
+        <Flame className="h-5 w-5 text-primary" />
         <span className="font-bold">GrowthGrid</span>
       </div>
       <Sheet open={open} onOpenChange={setOpen}>
