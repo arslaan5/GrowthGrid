@@ -23,6 +23,7 @@ import {
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Loader } from "@/components/loader";
 import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
 import {
@@ -398,8 +399,8 @@ function EntryDetailPageInner() {
 
         {/* Content (rendered markdown) */}
         <Card>
-          <CardContent className="prose prose-neutral dark:prose-invert max-w-none py-6">
-            <ReactMarkdown>{entry.content}</ReactMarkdown>
+          <CardContent className="prose prose-zinc dark:prose-invert max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{entry.content}</ReactMarkdown>
           </CardContent>
         </Card>
 

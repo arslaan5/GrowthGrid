@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import type { Entry } from "@/lib/types";
+import { stripMarkdown } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -218,7 +219,7 @@ export default function EntriesListPage() {
                       {format(parseISO(entry.date), "MMM d, yyyy")}
                     </p>
                     <p className="text-muted-foreground mt-1 line-clamp-1 text-sm">
-                      {entry.content.slice(0, 120)}
+                      {stripMarkdown(entry.content).slice(0, 120)}
                     </p>
                     {entry.tags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">

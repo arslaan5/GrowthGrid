@@ -4,6 +4,7 @@ import { useEffect, useReducer } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import type { Summary, HeatmapDay, Entry } from "@/lib/types";
+import { stripMarkdown } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -270,7 +271,7 @@ export default function DashboardPage() {
                         {format(parseISO(entry.date), "MMM d, yyyy")}
                       </p>
                       <p className="text-muted-foreground mt-0.5 line-clamp-1 text-xs">
-                        {entry.content.slice(0, 100)}
+                        {stripMarkdown(entry.content).slice(0, 100)}
                       </p>
                     </div>
                     <div className="ml-3 flex shrink-0 items-center gap-2">
