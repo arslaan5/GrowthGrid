@@ -216,10 +216,10 @@ export default function DashboardPage() {
 
       {/* Heatmap */}
       <Card className="animate-fade-up stagger-3 py-4">
-        <CardHeader className="pb-0">
+        <CardHeader className="px-4 pb-0 sm:px-6">
           <CardTitle className="text-base">Learning Activity</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 sm:px-6 sm:pt-2">
           <Heatmap data={heatmap} />
         </CardContent>
       </Card>

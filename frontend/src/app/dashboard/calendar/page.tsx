@@ -53,8 +53,8 @@ export default function CalendarPage() {
 
       <div className="grid gap-6 lg:grid-cols-[auto_1fr]">
         {/* Calendar widget */}
-        <Card className="w-fit">
-          <CardContent className="p-4">
+        <Card className="w-full lg:w-fit">
+          <CardContent className="p-2 sm:p-4">
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -63,6 +63,10 @@ export default function CalendarPage() {
                 hasEntry: (d) => datesWithEntries.has(format(d, "yyyy-MM-dd")),
               }}
               modifiersClassNames={{ hasEntry: "bg-primary/20 font-bold" }}
+              classNames={{
+                root: "w-full",
+                month: "w-full flex flex-col gap-4",
+              }}
             />
           </CardContent>
         </Card>
