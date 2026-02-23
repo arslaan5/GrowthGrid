@@ -28,7 +28,7 @@ export function Heatmap({ data }: HeatmapProps) {
   return (
     <div className="space-y-3">
       <div className="heatmap-wrapper overflow-x-auto">
-        <style jsx global>{`
+        <style>{`
           .heatmap-wrapper .react-calendar-heatmap text {
             font-size: 8px;
             fill: var(--color-muted-foreground);

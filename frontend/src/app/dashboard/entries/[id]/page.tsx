@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useReducer } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import type { Entry, LinkPayload } from "@/lib/types";
@@ -39,35 +39,163 @@ import {
   X,
 } from "lucide-react";
 
-export default function EntryDetailPage() {
+// ─── State shape ────────────────────────────────────────────────────────────
+
+interface EditState {
+  date: Date;
+  title: string;
+  content: string;
+  tags: string[];
+  tagInput: string;
+  links: LinkPayload[];
+  linkTitle: string;
+  linkUrl: string;
+  newFiles: File[];
+  calendarOpen: boolean;
+}
+
+interface PageState {
+  entry: Entry | null;
+  loading: boolean;
+  editing: boolean;
+  deleting: boolean;
+  saving: boolean;
+  existingTags: string[];
+  edit: EditState;
+}
+
+type Action =
+  | { type: "SET_ENTRY"; payload: Entry }
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_EDITING"; payload: boolean }
+  | { type: "SET_DELETING"; payload: boolean }
+  | { type: "SET_SAVING"; payload: boolean }
+  | { type: "SET_EXISTING_TAGS"; payload: string[] }
+  | { type: "POPULATE_EDIT"; payload: Entry }
+  | { type: "SET_DATE"; payload: Date }
+  | { type: "SET_TITLE"; payload: string }
+  | { type: "SET_CONTENT"; payload: string }
+  | { type: "SET_TAGS"; payload: string[] }
+  | { type: "SET_TAG_INPUT"; payload: string }
+  | { type: "SET_LINKS"; payload: LinkPayload[] }
+  | { type: "SET_LINK_TITLE"; payload: string }
+  | { type: "SET_LINK_URL"; payload: string }
+  | { type: "SET_NEW_FILES"; payload: File[] }
+  | { type: "SET_CALENDAR_OPEN"; payload: boolean }
+  | { type: "REMOVE_ATTACHMENT"; payload: string };
+
+const initialEditState: EditState = {
+  date: new Date(),
+  title: "",
+  content: "",
+  tags: [],
+  tagInput: "",
+  links: [],
+  linkTitle: "",
+  linkUrl: "",
+  newFiles: [],
+  calendarOpen: false,
+};
+
+const initialState: PageState = {
+  entry: null,
+  loading: true,
+  editing: false,
+  deleting: false,
+  saving: false,
+  existingTags: [],
+  edit: initialEditState,
+};
+
+function reducer(state: PageState, action: Action): PageState {
+  switch (action.type) {
+    case "SET_ENTRY":
+      return { ...state, entry: action.payload };
+    case "SET_LOADING":
+      return { ...state, loading: action.payload };
+    case "SET_EDITING":
+      return { ...state, editing: action.payload };
+    case "SET_DELETING":
+      return { ...state, deleting: action.payload };
+    case "SET_SAVING":
+      return { ...state, saving: action.payload };
+    case "SET_EXISTING_TAGS":
+      return { ...state, existingTags: action.payload };
+    case "POPULATE_EDIT":
+      return {
+        ...state,
+        edit: {
+          ...state.edit,
+          date: parseISO(action.payload.date),
+          title: action.payload.title,
+          content: action.payload.content,
+          tags: action.payload.tags.map((t) => t.name),
+          links: action.payload.links.map((lk) => ({ title: lk.title, url: lk.url })),
+        },
+      };
+    case "SET_DATE":
+      return { ...state, edit: { ...state.edit, date: action.payload } };
+    case "SET_TITLE":
+      return { ...state, edit: { ...state.edit, title: action.payload } };
+    case "SET_CONTENT":
+      return { ...state, edit: { ...state.edit, content: action.payload } };
+    case "SET_TAGS":
+      return { ...state, edit: { ...state.edit, tags: action.payload } };
+    case "SET_TAG_INPUT":
+      return { ...state, edit: { ...state.edit, tagInput: action.payload } };
+    case "SET_LINKS":
+      return { ...state, edit: { ...state.edit, links: action.payload } };
+    case "SET_LINK_TITLE":
+      return { ...state, edit: { ...state.edit, linkTitle: action.payload } };
+    case "SET_LINK_URL":
+      return { ...state, edit: { ...state.edit, linkUrl: action.payload } };
+    case "SET_NEW_FILES":
+      return { ...state, edit: { ...state.edit, newFiles: action.payload } };
+    case "SET_CALENDAR_OPEN":
+      return { ...state, edit: { ...state.edit, calendarOpen: action.payload } };
+    case "REMOVE_ATTACHMENT":
+      return {
+        ...state,
+        entry: state.entry
+          ? {
+              ...state.entry,
+              attachments: state.entry.attachments.filter((a) => a.id !== action.payload),
+            }
+          : state.entry,
+      };
+    default:
+      return state;
+  }
+}
+
+// ─── Inner component (uses useSearchParams — must be inside Suspense) ────────
+
+function EntryDetailPageInner() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [entry, setEntry] = useState<Entry | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  // Edit state
-  const [date, setDate] = useState<Date>(new Date());
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState("");
-  const [links, setLinks] = useState<LinkPayload[]>([]);
-  const [linkTitle, setLinkTitle] = useState("");
-  const [linkUrl, setLinkUrl] = useState("");
-  const [newFiles, setNewFiles] = useState<File[]>([]);
-  const [calendarOpen, setCalendarOpen] = useState(false);
-  const [existingTags, setExistingTags] = useState<string[]>([]);
+  const { entry, loading, editing, deleting, saving, existingTags, edit } = state;
+  const {
+    date,
+    title,
+    content,
+    tags,
+    tagInput,
+    links,
+    linkTitle,
+    linkUrl,
+    newFiles,
+    calendarOpen,
+  } = edit;
 
   // Fetch all previously-used tags
   useEffect(() => {
     const fetchTags = async () => {
       try {
         const res = await api.get("/entries/tags");
-        setExistingTags(res.data);
+        dispatch({ type: "SET_EXISTING_TAGS", payload: res.data });
       } catch {
         // silently ignore
       }
@@ -79,30 +207,22 @@ export default function EntryDetailPage() {
     const load = async () => {
       try {
         const res = await api.get(`/entries/${id}`);
-        setEntry(res.data);
-        populateEditState(res.data);
-        // Open in edit mode if ?edit=true
+        dispatch({ type: "SET_ENTRY", payload: res.data });
+        dispatch({ type: "POPULATE_EDIT", payload: res.data });
+        // Open in edit mode if ?edit=true — read from searchParams without storing in state
         if (searchParams.get("edit") === "true") {
-          setEditing(true);
+          dispatch({ type: "SET_EDITING", payload: true });
         }
       } catch {
         toast.error("Entry not found.");
         router.replace("/dashboard");
       } finally {
-        setLoading(false);
+        dispatch({ type: "SET_LOADING", payload: false });
       }
     };
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
-
-  const populateEditState = (e: Entry) => {
-    setDate(parseISO(e.date));
-    setTitle(e.title);
-    setContent(e.content);
-    setTags(e.tags.map((t) => t.name));
-    setLinks(e.links.map((lk) => ({ title: lk.title, url: lk.url })));
-  };
 
   // Track unsaved changes in edit mode
   const isDirty =
@@ -117,30 +237,35 @@ export default function EntryDetailPage() {
 
   const addTag = () => {
     const t = tagInput.trim().toLowerCase();
-    if (t && !tags.includes(t)) setTags([...tags, t]);
-    setTagInput("");
+    if (t && !tags.includes(t)) dispatch({ type: "SET_TAGS", payload: [...tags, t] });
+    dispatch({ type: "SET_TAG_INPUT", payload: "" });
   };
 
-  const removeTag = (t: string) => setTags(tags.filter((x) => x !== t));
+  const removeTag = (t: string) =>
+    dispatch({ type: "SET_TAGS", payload: tags.filter((x) => x !== t) });
 
   const addLink = () => {
     if (linkTitle.trim() && linkUrl.trim()) {
-      setLinks([...links, { title: linkTitle.trim(), url: linkUrl.trim() }]);
-      setLinkTitle("");
-      setLinkUrl("");
+      dispatch({
+        type: "SET_LINKS",
+        payload: [...links, { title: linkTitle.trim(), url: linkUrl.trim() }],
+      });
+      dispatch({ type: "SET_LINK_TITLE", payload: "" });
+      dispatch({ type: "SET_LINK_URL", payload: "" });
     }
   };
 
-  const removeLink = (idx: number) => setLinks(links.filter((_, i) => i !== idx));
+  const removeLink = (idx: number) =>
+    dispatch({ type: "SET_LINKS", payload: links.filter((_, i) => i !== idx) });
 
   const handleUpdate = async () => {
     if (!title.trim() || !content.trim()) {
       toast.error("Title and content are required.");
       return;
     }
-    setSaving(true);
+    dispatch({ type: "SET_SAVING", payload: true });
     try {
-      const _res = await api.put(`/entries/${id}`, {
+      await api.put(`/entries/${id}`, {
         date: format(date, "yyyy-MM-dd"),
         title: title.trim(),
         content: content.trim(),
@@ -159,10 +284,10 @@ export default function EntryDetailPage() {
 
       // Re-fetch to get full data with attachments
       const updated = await api.get(`/entries/${id}`);
-      setEntry(updated.data);
-      populateEditState(updated.data);
-      setNewFiles([]);
-      setEditing(false);
+      dispatch({ type: "SET_ENTRY", payload: updated.data });
+      dispatch({ type: "POPULATE_EDIT", payload: updated.data });
+      dispatch({ type: "SET_NEW_FILES", payload: [] });
+      dispatch({ type: "SET_EDITING", payload: false });
       toast.success("Entry updated!");
     } catch (err: unknown) {
       const msg =
@@ -171,12 +296,12 @@ export default function EntryDetailPage() {
           : "Failed to update entry.";
       toast.error(msg || "Failed to update entry.");
     } finally {
-      setSaving(false);
+      dispatch({ type: "SET_SAVING", payload: false });
     }
   };
 
   const handleDelete = async () => {
-    setDeleting(true);
+    dispatch({ type: "SET_DELETING", payload: true });
     try {
       await api.delete(`/entries/${id}`);
       toast.success("Entry deleted.");
@@ -184,21 +309,14 @@ export default function EntryDetailPage() {
     } catch {
       toast.error("Failed to delete entry.");
     } finally {
-      setDeleting(false);
+      dispatch({ type: "SET_DELETING", payload: false });
     }
   };
 
   const handleDeleteAttachment = async (attachmentId: string) => {
     try {
       await api.delete(`/entries/${id}/attachments/${attachmentId}`);
-      setEntry((prev) =>
-        prev
-          ? {
-              ...prev,
-              attachments: prev.attachments.filter((a) => a.id !== attachmentId),
-            }
-          : prev
-      );
+      dispatch({ type: "REMOVE_ATTACHMENT", payload: attachmentId });
       toast.success("Attachment deleted.");
     } catch {
       toast.error("Failed to delete attachment.");
@@ -226,7 +344,12 @@ export default function EntryDetailPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="gap-1" onClick={() => setEditing(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1"
+              onClick={() => dispatch({ type: "SET_EDITING", payload: true })}
+            >
               <Edit3 className="h-3 w-3" /> Edit
             </Button>
             <Dialog>
@@ -354,7 +477,10 @@ export default function EntryDetailPage() {
           {/* Date */}
           <div className="space-y-2">
             <Label>Date</Label>
-            <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <Dialog
+              open={calendarOpen}
+              onOpenChange={(open) => dispatch({ type: "SET_CALENDAR_OPEN", payload: open })}
+            >
               <DialogTrigger asChild>
                 <Button variant="outline" className="w-full justify-start gap-2 font-normal">
                   <CalendarDays className="h-4 w-4" />
@@ -370,11 +496,10 @@ export default function EntryDetailPage() {
                   selected={date}
                   onSelect={(d) => {
                     if (d) {
-                      setDate(d);
-                      setCalendarOpen(false);
+                      dispatch({ type: "SET_DATE", payload: d });
+                      dispatch({ type: "SET_CALENDAR_OPEN", payload: false });
                     }
                   }}
-                  initialFocus
                 />
               </DialogContent>
             </Dialog>
@@ -383,7 +508,11 @@ export default function EntryDetailPage() {
           {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="edit-title">Title</Label>
-            <Input id="edit-title" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Input
+              id="edit-title"
+              value={title}
+              onChange={(e) => dispatch({ type: "SET_TITLE", payload: e.target.value })}
+            />
           </div>
 
           {/* Content */}
@@ -393,7 +522,7 @@ export default function EntryDetailPage() {
               id="edit-content"
               rows={10}
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={(e) => dispatch({ type: "SET_CONTENT", payload: e.target.value })}
               className="font-mono text-sm"
             />
           </div>
@@ -407,7 +536,7 @@ export default function EntryDetailPage() {
               <Input
                 placeholder="Add a tag…"
                 value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
+                onChange={(e) => dispatch({ type: "SET_TAG_INPUT", payload: e.target.value })}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -448,8 +577,8 @@ export default function EntryDetailPage() {
                         variant="outline"
                         className="hover:bg-accent cursor-pointer text-[11px] transition-colors"
                         onClick={() => {
-                          setTags([...tags, t]);
-                          setTagInput("");
+                          dispatch({ type: "SET_TAGS", payload: [...tags, t] });
+                          dispatch({ type: "SET_TAG_INPUT", payload: "" });
                         }}
                       >
                         + {t}
@@ -469,12 +598,12 @@ export default function EntryDetailPage() {
               <Input
                 placeholder="Title"
                 value={linkTitle}
-                onChange={(e) => setLinkTitle(e.target.value)}
+                onChange={(e) => dispatch({ type: "SET_LINK_TITLE", payload: e.target.value })}
               />
               <Input
                 placeholder="URL"
                 value={linkUrl}
-                onChange={(e) => setLinkUrl(e.target.value)}
+                onChange={(e) => dispatch({ type: "SET_LINK_URL", payload: e.target.value })}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -488,12 +617,12 @@ export default function EntryDetailPage() {
             </div>
             {links.length > 0 && (
               <div className="mt-2 space-y-1">
-                {links.map((lk, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-sm">
+                {links.map((lk) => (
+                  <div key={`${lk.title}-${lk.url}`} className="flex items-center gap-2 text-sm">
                     <Link2 className="text-muted-foreground h-3 w-3" />
                     <span className="font-medium">{lk.title}</span>
                     <span className="text-muted-foreground truncate">{lk.url}</span>
-                    <button className="ml-auto" onClick={() => removeLink(idx)}>
+                    <button className="ml-auto" onClick={() => removeLink(links.indexOf(lk))}>
                       <X className="text-muted-foreground hover:text-destructive h-3 w-3" />
                     </button>
                   </div>
@@ -536,21 +665,30 @@ export default function EntryDetailPage() {
                 multiple
                 className="hidden"
                 onChange={(e) => {
-                  if (e.target.files) setNewFiles([...newFiles, ...Array.from(e.target.files)]);
+                  if (e.target.files)
+                    dispatch({
+                      type: "SET_NEW_FILES",
+                      payload: [...newFiles, ...Array.from(e.target.files)],
+                    });
                 }}
               />
             </label>
             {newFiles.length > 0 && (
               <div className="mt-2 space-y-1">
-                {newFiles.map((f, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-sm">
+                {newFiles.map((f) => (
+                  <div key={f.name} className="flex items-center gap-2 text-sm">
                     <span className="truncate">{f.name}</span>
                     <span className="text-muted-foreground text-xs">
                       ({(f.size / 1024).toFixed(1)} KB)
                     </span>
                     <button
                       className="ml-auto"
-                      onClick={() => setNewFiles(newFiles.filter((_, i) => i !== idx))}
+                      onClick={() =>
+                        dispatch({
+                          type: "SET_NEW_FILES",
+                          payload: newFiles.filter((x) => x !== f),
+                        })
+                      }
                     >
                       <X className="text-muted-foreground hover:text-destructive h-3 w-3" />
                     </button>
@@ -592,5 +730,15 @@ export default function EntryDetailPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// ─── Public export — wrapped in Suspense for useSearchParams ────────────────
+
+export default function EntryDetailPage() {
+  return (
+    <Suspense fallback={<Loader message="Loading entry…" fullScreen={false} />}>
+      <EntryDetailPageInner />
+    </Suspense>
   );
 }

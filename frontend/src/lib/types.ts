@@ -38,11 +38,6 @@ export interface Entry {
   updated_at: string;
 }
 
-export interface EntryListResponse {
-  entries: Entry[];
-  total: number;
-}
-
 export interface HeatmapDay {
   date: string;
   count: number;
@@ -61,20 +56,4 @@ export interface Summary {
 export interface LinkPayload {
   title: string;
   url: string;
-}
-
-export interface EntryCreatePayload {
-  date: string;
-  title: string;
-  content: string;
-  tags: string[];
-  links: LinkPayload[];
-}
-
-export interface EntryUpdatePayload {
-  date?: string;
-  title?: string;
-  content?: string;
-  tags?: string[];
-  links?: LinkPayload[];
 }

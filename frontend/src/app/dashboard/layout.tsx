@@ -12,6 +12,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  // Redirect unauthenticated users — useEffect is required here because
+  // useAuth is a client-side context hook; router.replace is the correct
+  // client-component equivalent of server-side redirect().
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/login");

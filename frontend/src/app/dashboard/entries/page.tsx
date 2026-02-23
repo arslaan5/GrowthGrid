@@ -81,11 +81,6 @@ export default function EntriesListPage() {
     fetchEntries();
   }, [fetchEntries]);
 
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [search, activeTag]);
-
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const handleDelete = async () => {
@@ -124,12 +119,18 @@ export default function EntriesListPage() {
             placeholder="Search entries by title or content…"
             className="pl-9 transition-all duration-200 focus:scale-[1.01]"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
           {search && (
             <button
               className="absolute top-1/2 right-3 -translate-y-1/2 transition-transform duration-150 hover:scale-110 active:scale-95"
-              onClick={() => setSearch("")}
+              onClick={() => {
+                setSearch("");
+                setPage(1);
+              }}
             >
               <X className="text-muted-foreground hover:text-foreground h-4 w-4" />
             </button>
@@ -145,7 +146,10 @@ export default function EntriesListPage() {
             <Badge
               variant="default"
               className="cursor-pointer gap-1 transition-all duration-150 hover:scale-105 active:scale-95"
-              onClick={() => setActiveTag(null)}
+              onClick={() => {
+                setActiveTag(null);
+                setPage(1);
+              }}
             >
               {activeTag}
               <X className="h-3 w-3" />
@@ -158,7 +162,10 @@ export default function EntriesListPage() {
                 key={tag}
                 variant="secondary"
                 className="hover:bg-accent cursor-pointer transition-all duration-150 hover:scale-105 active:scale-95"
-                onClick={() => setActiveTag(tag)}
+                onClick={() => {
+                  setActiveTag(tag);
+                  setPage(1);
+                }}
               >
                 {tag}
               </Badge>

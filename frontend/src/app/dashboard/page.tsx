@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import type { Summary, HeatmapDay, Entry } from "@/lib/types";
@@ -38,15 +38,56 @@ function getMotivationalMessage(streak: number): string {
   return `${streak}-day streak — absolutely incredible! 🏆`;
 }
 
+// ---------------------------------------------------------------------------
+// Reducer
+// ---------------------------------------------------------------------------
+interface DashboardState {
+  summary: Summary | null;
+  heatmap: HeatmapDay[];
+  recent: Entry[];
+  loadingSummary: boolean;
+  loadingRecent: boolean;
+}
+
+type DashboardAction =
+  | { type: "FETCH_SUCCESS"; summary: Summary; heatmap: HeatmapDay[]; recent: Entry[] }
+  | { type: "FETCH_ERROR" };
+
+const initialState: DashboardState = {
+  summary: null,
+  heatmap: [],
+  recent: [],
+  loadingSummary: true,
+  loadingRecent: true,
+};
+
+function dashboardReducer(state: DashboardState, action: DashboardAction): DashboardState {
+  switch (action.type) {
+    case "FETCH_SUCCESS":
+      return {
+        ...state,
+        summary: action.summary,
+        heatmap: action.heatmap,
+        recent: action.recent,
+        loadingSummary: false,
+        loadingRecent: false,
+      };
+    case "FETCH_ERROR":
+      return { ...state, loadingSummary: false, loadingRecent: false };
+    default:
+      return state;
+  }
+}
+
 export default function DashboardPage() {
-  const [summary, setSummary] = useState<Summary | null>(null);
-  const [heatmap, setHeatmap] = useState<HeatmapDay[]>([]);
-  const [recent, setRecent] = useState<Entry[]>([]);
-  const [loadingSummary, setLoadingSummary] = useState(true);
-  const [loadingRecent, setLoadingRecent] = useState(true);
+  const [{ summary, heatmap, recent, loadingSummary, loadingRecent }, dispatch] = useReducer(
+    dashboardReducer,
+    initialState
+  );
   const modLabel = useModLabel();
 
   useEffect(() => {
+    let cancelled = false;
     const fetchAll = async () => {
       try {
         const [sumRes, heatRes, entryRes] = await Promise.all([
@@ -54,17 +95,25 @@ export default function DashboardPage() {
           api.get("/analytics/heatmap"),
           api.get("/entries", { params: { limit: 5 } }),
         ]);
-        setSummary(sumRes.data);
-        setHeatmap(heatRes.data);
-        setRecent(entryRes.data.entries);
+        if (!cancelled) {
+          dispatch({
+            type: "FETCH_SUCCESS",
+            summary: sumRes.data,
+            heatmap: heatRes.data,
+            recent: entryRes.data.entries,
+          });
+        }
       } catch {
         // silently handle — user is already authenticated via layout guard
-      } finally {
-        setLoadingSummary(false);
-        setLoadingRecent(false);
+        if (!cancelled) {
+          dispatch({ type: "FETCH_ERROR" });
+        }
       }
     };
     fetchAll();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const statCards = summary
