@@ -5,10 +5,17 @@ import uuid
 from io import BytesIO
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 from fastapi import HTTPException, UploadFile, status
 
 from app.core.config import settings
+
+# B2 requires SigV4 and path-style addressing on its S3-compatible endpoint.
+_B2_CLIENT_CONFIG = Config(
+    signature_version="s3v4",
+    s3={"addressing_style": "path"},
+)
 
 # Maximum file size: 10 MB
 MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -31,6 +38,7 @@ def _get_s3_client():
         endpoint_url=settings.B2_ENDPOINT_URL,
         aws_access_key_id=settings.B2_KEY_ID,
         aws_secret_access_key=settings.B2_APPLICATION_KEY,
+        config=_B2_CLIENT_CONFIG,
     )
 
 
