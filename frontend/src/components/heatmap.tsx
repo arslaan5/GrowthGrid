@@ -181,7 +181,7 @@ export function Heatmap({ data }: HeatmapProps) {
       </div>
 
       {/* Footer: legend + summary */}
-      <div className="text-muted-foreground flex items-center justify-between text-xs">
+      <div className="text-muted-foreground flex flex-col gap-1.5 text-xs sm:flex-row sm:items-center sm:justify-between">
         <span>
           {stats.activeDays} active day{stats.activeDays !== 1 ? "s" : ""} · {stats.totalEntries}{" "}
           entr{stats.totalEntries !== 1 ? "ies" : "y"} this year
