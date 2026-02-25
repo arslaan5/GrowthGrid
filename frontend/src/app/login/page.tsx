@@ -18,17 +18,18 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   // Navigate only once the auth context has confirmed the user is set.
+  // Use window.location for hard navigation to ensure it works in production.
   useEffect(() => {
     // #region agent log
     fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:21',message:'redirect useEffect triggered',data:{authLoading,hasUser:!!user,userId:user?.id||null},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
     // #endregion
     if (!authLoading && user) {
       // #region agent log
-      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:23',message:'router.replace(/dashboard) called',data:{userId:user?.id},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:23',message:'window.location.href=/dashboard called',data:{userId:user?.id},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
       // #endregion
-      router.replace("/dashboard");
+      window.location.href = "/dashboard";
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
