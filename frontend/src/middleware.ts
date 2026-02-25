@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/login", "/register"];
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("access_token")?.value;
 
@@ -21,6 +21,8 @@ export function proxy(request: NextRequest) {
 
   return NextResponse.next();
 }
+
+export default middleware;
 
 export const config = {
   matcher: [
