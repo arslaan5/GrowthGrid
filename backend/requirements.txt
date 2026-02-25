@@ -17,8 +17,10 @@ email-validator==2.3.0
 fastapi==0.129.2
 filelock==3.24.3
 greenlet==3.3.2
+gunicorn==25.1.0
 h11==0.16.0
 httpcore==1.0.9
+httptools==0.7.1
 httpx==0.28.1
 identify==2.6.16
 idna==3.11
@@ -54,4 +56,6 @@ typing-inspection==0.4.2
 urllib3==2.6.3
 uvicorn==0.41.0
 virtualenv==20.38.0
+watchfiles==1.1.1
+websockets==16.0
 wrapt==2.1.1
