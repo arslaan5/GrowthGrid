@@ -74,6 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // #region agent log
       fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:54',message:'/auth/login success',data:{status:loginResponse?.status,hasCookies:!!loginResponse?.headers?.['set-cookie']},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{});
       // #endregion
+      // Small delay to ensure cookie is set before making the next request
+      // This is needed for cross-domain cookies with SameSite=None
+      await new Promise(resolve => setTimeout(resolve, 100));
       await refresh();
       // #region agent log
       fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:77',message:'login() completed, refresh() finished',data:{},timestamp:Date.now(),runId:'run1',hypothesisId:'A,B'})}).catch(()=>{});
