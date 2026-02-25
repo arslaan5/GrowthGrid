@@ -45,6 +45,7 @@ async def login(
         secure=settings.is_production,
         samesite="none" if settings.is_production else "lax",
         max_age=7 * 24 * 60 * 60,  # 7 days
+        path="/",  # Explicitly set path to root
     )
 
     return {"message": "Login successful"}
@@ -58,6 +59,7 @@ async def logout(response: Response):
         httponly=True,
         secure=settings.is_production,
         samesite="none" if settings.is_production else "lax",
+        path="/",  # Must match the path used when setting the cookie
     )
     return {"message": "Logged out successfully"}
 
@@ -92,4 +94,5 @@ async def remove_account(
         httponly=True,
         secure=settings.is_production,
         samesite="none" if settings.is_production else "lax",
+        path="/",  # Must match the path used when setting the cookie
     )
