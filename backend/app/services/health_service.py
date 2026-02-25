@@ -7,22 +7,18 @@ import sys
 import time
 from typing import Any
 
-import boto3
-from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
 from sqlalchemy import text
 
+from app.core.b2_client import get_s3_client
 from app.core.config import settings
+from app.core.logging import get_logger
 from app.db.session import engine
+
+logger = get_logger("health")
 
 # Recorded once at import time so uptime is relative to process start.
 _PROCESS_START: float = time.monotonic()
-
-# B2 requires SigV4 and path-style addressing on its S3-compatible endpoint.
-_B2_CLIENT_CONFIG = Config(
-    signature_version="s3v4",
-    s3={"addressing_style": "path"},
-)
 
 
 # ---------------------------------------------------------------------------
@@ -53,6 +49,7 @@ async def _check_database() -> dict[str, Any]:
             result["note"] = "latency is elevated — possible cold connection or network congestion"
         return result
     except Exception as exc:
+        logger.error("Database health check failed: %s", exc)
         return {
             "status": "error",
             "detail": str(exc),
@@ -68,13 +65,7 @@ def _check_storage() -> dict[str, Any]:
     """
     start = time.perf_counter()
     try:
-        s3 = boto3.client(
-            "s3",
-            endpoint_url=settings.B2_ENDPOINT_URL,
-            aws_access_key_id=settings.B2_KEY_ID,
-            aws_secret_access_key=settings.B2_APPLICATION_KEY,
-            config=_B2_CLIENT_CONFIG,
-        )
+        s3 = get_s3_client()
         s3.list_objects_v2(Bucket=settings.B2_BUCKET_NAME, MaxKeys=1)
         latency_ms = round((time.perf_counter() - start) * 1000, 2)
         return {
@@ -83,6 +74,7 @@ def _check_storage() -> dict[str, Any]:
             "latency_ms": latency_ms,
         }
     except (ClientError, BotoCoreError) as exc:
+        logger.error("Storage health check failed: %s", exc)
         return {
             "status": "error",
             "bucket": settings.B2_BUCKET_NAME,

@@ -7,9 +7,7 @@ import type { LinkPayload } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -21,196 +19,12 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { CalendarDays, Plus, X, Link2, Upload, ArrowLeft, Save } from "lucide-react";
+import { CalendarDays, ArrowLeft, Save } from "lucide-react";
 import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
-
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
-
-interface TagInputProps {
-  tags: string[];
-  existingTags: string[];
-  tagInput: string;
-  onTagInputChange: (v: string) => void;
-  onAdd: () => void;
-  onRemove: (t: string) => void;
-  onSuggest: (t: string) => void;
-}
-
-function TagInput({
-  tags,
-  existingTags,
-  tagInput,
-  onTagInputChange,
-  onAdd,
-  onRemove,
-  onSuggest,
-}: TagInputProps) {
-  return (
-    <div className="space-y-2">
-      <Label>Tags</Label>
-      <div className="flex gap-2">
-        <Input
-          placeholder="Add a tag…"
-          value={tagInput}
-          onChange={(e) => onTagInputChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              onAdd();
-            }
-          }}
-        />
-        <Button type="button" variant="secondary" size="icon" onClick={onAdd}>
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
-      {tags.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-2">
-          {tags.map((t) => (
-            <Badge key={t} variant="secondary" className="gap-1">
-              {t}
-              <button onClick={() => onRemove(t)}>
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))}
-        </div>
-      )}
-      {existingTags.filter((t) => !tags.includes(t)).length > 0 && (
-        <div className="mt-2 space-y-1">
-          <div className="flex flex-wrap gap-1.5">
-            {existingTags
-              .filter(
-                (t) =>
-                  !tags.includes(t) &&
-                  (!tagInput.trim() || t.includes(tagInput.trim().toLowerCase()))
-              )
-              .map((t) => (
-                <Badge
-                  key={t}
-                  variant="outline"
-                  className="hover:bg-accent cursor-pointer text-[11px] transition-colors"
-                  onClick={() => onSuggest(t)}
-                >
-                  + {t}
-                </Badge>
-              ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface LinkInputProps {
-  links: LinkPayload[];
-  linkTitle: string;
-  linkUrl: string;
-  onTitleChange: (v: string) => void;
-  onUrlChange: (v: string) => void;
-  onAdd: () => void;
-  onRemove: (idx: number) => void;
-}
-
-function LinkInput({
-  links,
-  linkTitle,
-  linkUrl,
-  onTitleChange,
-  onUrlChange,
-  onAdd,
-  onRemove,
-}: LinkInputProps) {
-  return (
-    <div className="space-y-2">
-      <Label>Resource Links</Label>
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <Input
-          placeholder="Title"
-          value={linkTitle}
-          onChange={(e) => onTitleChange(e.target.value)}
-        />
-        <Input
-          placeholder="URL"
-          value={linkUrl}
-          onChange={(e) => onUrlChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              onAdd();
-            }
-          }}
-        />
-        <Button type="button" variant="secondary" size="icon" onClick={onAdd}>
-          <Link2 className="h-4 w-4" />
-        </Button>
-      </div>
-      {links.length > 0 && (
-        <div className="mt-2 space-y-1">
-          {links.map((lk, idx) => (
-            <div key={`${lk.title}-${lk.url}`} className="flex items-center gap-2 text-sm">
-              <Link2 className="text-muted-foreground h-3 w-3" />
-              <span className="font-medium">{lk.title}</span>
-              <span className="text-muted-foreground truncate">{lk.url}</span>
-              <button className="ml-auto" onClick={() => onRemove(idx)}>
-                <X className="text-muted-foreground hover:text-destructive h-3 w-3" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface FileAttachmentsProps {
-  files: File[];
-  onAdd: (newFiles: File[]) => void;
-  onRemove: (f: File) => void;
-}
-
-function FileAttachments({ files, onAdd, onRemove }: FileAttachmentsProps) {
-  return (
-    <div className="space-y-2">
-      <Label>Attachments</Label>
-      <div className="flex items-center gap-2">
-        <label className="cursor-pointer">
-          <div className="text-muted-foreground hover:bg-accent flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors">
-            <Upload className="h-4 w-4" />
-            Choose files
-          </div>
-          <input
-            type="file"
-            multiple
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files) {
-                onAdd(Array.from(e.target.files));
-              }
-            }}
-          />
-        </label>
-      </div>
-      {files.length > 0 && (
-        <div className="mt-2 space-y-1">
-          {files.map((f) => (
-            <div key={f.name} className="flex items-center gap-2 text-sm">
-              <span className="truncate">{f.name}</span>
-              <span className="text-muted-foreground text-xs">
-                ({(f.size / 1024).toFixed(1)} KB)
-              </span>
-              <button className="ml-auto" onClick={() => onRemove(f)}>
-                <X className="text-muted-foreground hover:text-destructive h-3 w-3" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+import { TagInput } from "@/components/entry/tag-input";
+import { LinkInput } from "@/components/entry/link-input";
+import { FileAttachments } from "@/components/entry/file-attachments";
+import { MarkdownEditor } from "@/components/entry/markdown-editor";
 
 // ---------------------------------------------------------------------------
 // Reducer
@@ -393,8 +207,9 @@ export default function NewEntryPage() {
       // Upload files sequentially
       for (const file of files) {
         const fd = new FormData();
+        fd.append("entry_id", entryId);
         fd.append("file", file);
-        await api.post(`/entries/${entryId}/attachments`, fd, {
+        await api.post("/uploads", fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
@@ -466,20 +281,11 @@ export default function NewEntryPage() {
           </div>
 
           {/* Content */}
-          <div className="space-y-2">
-            <Label htmlFor="content">Content (Markdown supported)</Label>
-            <Textarea
-              id="content"
-              placeholder="Write about what you learned..."
-              rows={10}
-              value={content}
-              onChange={(e) => dispatch({ type: "SET_CONTENT", payload: e.target.value })}
-              className="font-mono text-sm"
-            />
-            <p className="text-muted-foreground text-right text-xs">
-              {content.trim().split(/\s+/).filter(Boolean).length} words
-            </p>
-          </div>
+          <MarkdownEditor
+            id="content"
+            value={content}
+            onChange={(v) => dispatch({ type: "SET_CONTENT", payload: v })}
+          />
 
           <Separator />
 

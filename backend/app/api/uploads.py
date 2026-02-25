@@ -9,7 +9,11 @@ from app.db.session import get_db
 from app.models.user import User
 from app.schemas.entry import AttachmentResponse
 from app.services.auth_service import get_current_user
-from app.services.upload_service import create_attachment, remove_attachment
+from app.services.upload_service import (
+    create_attachment,
+    get_attachment_presigned_url,
+    remove_attachment,
+)
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
 
@@ -23,6 +27,17 @@ async def upload(
 ):
     """Upload a file and attach it to a journal entry."""
     return await create_attachment(entry_id, file, current_user.id, db)
+
+
+@router.get("/{attachment_id}/url")
+async def get_download_url(
+    attachment_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return a short-lived pre-signed download URL for an attachment."""
+    url = await get_attachment_presigned_url(attachment_id, current_user.id, db)
+    return {"url": url}
 
 
 @router.delete("/{attachment_id}", status_code=204)

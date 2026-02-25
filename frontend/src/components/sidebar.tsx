@@ -6,25 +6,10 @@ import { useTheme } from "next-themes";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import {
-  LayoutDashboard,
-  PenSquare,
-  CalendarDays,
-  BookOpen,
-  LogOut,
-  Sun,
-  Moon,
-  Flame,
-} from "lucide-react";
+import { LogOut, Sun, Moon, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useModLabel } from "@/lib/use-platform";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/entries", label: "Entries", icon: BookOpen },
-  { href: "/dashboard/entries/new", label: "New Entry", icon: PenSquare },
-  { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
-];
+import { navItems } from "@/lib/nav-config";
 
 export function Sidebar() {
   const pathname = usePathname();

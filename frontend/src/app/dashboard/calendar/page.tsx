@@ -1,49 +1,70 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
-import type { Entry } from "@/lib/types";
+import type { Entry, HeatmapDay } from "@/lib/types";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { format } from "date-fns";
+import { format, subYears } from "date-fns";
 import { CalendarDays } from "lucide-react";
 
 export default function CalendarPage() {
-  const [entries, setEntries] = useState<Entry[]>([]);
+  const [entryDates, setEntryDates] = useState<Set<string>>(new Set());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [loading, setLoading] = useState(true);
+  const [dayEntries, setDayEntries] = useState<Entry[]>([]);
+  const [loadingCalendar, setLoadingCalendar] = useState(true);
+  const [loadingDay, setLoadingDay] = useState(false);
 
+  // Fetch heatmap data once for the dots (lightweight — just date + count)
   useEffect(() => {
-    const fetchAll = async () => {
+    const fetchHeatmap = async () => {
       try {
-        // Fetch all entries (no limit for calendar overview)
-        const res = await api.get("/entries", { params: { limit: 1000 } });
-        setEntries(res.data.entries);
+        const startDate = format(subYears(new Date(), 1), "yyyy-MM-dd");
+        const endDate = format(new Date(), "yyyy-MM-dd");
+        const res = await api.get<HeatmapDay[]>("/analytics/heatmap", {
+          params: { start_date: startDate, end_date: endDate },
+        });
+        const dates = new Set(res.data.filter((d) => d.count > 0).map((d) => d.date));
+        setEntryDates(dates);
       } catch {
         // fail silently
       } finally {
-        setLoading(false);
+        setLoadingCalendar(false);
       }
     };
-    fetchAll();
+    fetchHeatmap();
   }, []);
 
-  // Map of date string → entries for quick look-up
-  const entriesByDate = entries.reduce<Record<string, Entry[]>>((acc, e) => {
-    const d = e.date; // YYYY-MM-DD
-    if (!acc[d]) acc[d] = [];
-    acc[d].push(e);
-    return acc;
-  }, {});
+  // Fetch entries only for the selected date
+  const fetchDayEntries = useCallback(async (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    setLoadingDay(true);
+    try {
+      const res = await api.get("/entries", {
+        params: { date: dateStr, limit: 100 },
+      });
+      setDayEntries(res.data.entries);
+    } catch {
+      setDayEntries([]);
+    } finally {
+      setLoadingDay(false);
+    }
+  }, []);
 
-  // Dates that have entries — used to show dots on the calendar
-  const datesWithEntries = new Set(Object.keys(entriesByDate));
+  // Load entries for today on mount
+  useEffect(() => {
+    fetchDayEntries(selectedDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const selectedKey = format(selectedDate, "yyyy-MM-dd");
-  const dayEntries = entriesByDate[selectedKey] ?? [];
+  const handleSelectDate = (d: Date | undefined) => {
+    if (!d) return;
+    setSelectedDate(d);
+    fetchDayEntries(d);
+  };
 
   return (
     <div className="space-y-6">
@@ -58,9 +79,9 @@ export default function CalendarPage() {
             <Calendar
               mode="single"
               selected={selectedDate}
-              onSelect={(d) => d && setSelectedDate(d)}
+              onSelect={handleSelectDate}
               modifiers={{
-                hasEntry: (d) => datesWithEntries.has(format(d, "yyyy-MM-dd")),
+                hasEntry: (d) => entryDates.has(format(d, "yyyy-MM-dd")),
               }}
               modifiersClassNames={{ hasEntry: "bg-primary/20 font-bold" }}
               classNames={{
@@ -79,7 +100,7 @@ export default function CalendarPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {loading ? (
+            {loadingCalendar || loadingDay ? (
               <div className="space-y-3">
                 {Array.from({ length: 2 }).map((_, i) => (
                   <div key={i} className="bg-muted h-14 animate-pulse rounded" />
@@ -98,7 +119,11 @@ export default function CalendarPage() {
                       className="hover:bg-accent flex items-center justify-between rounded-md px-2 py-3 transition-colors"
                     >
                       <div className="min-w-0">
-                        <p className="truncate font-medium">{entry.title}</p>
+                        <p className="truncate font-medium">
+                          {entry.title || (
+                            <span className="text-muted-foreground italic">Untitled</span>
+                          )}
+                        </p>
                         <p className="text-muted-foreground line-clamp-1 text-xs">
                           {entry.content.slice(0, 100)}
                         </p>

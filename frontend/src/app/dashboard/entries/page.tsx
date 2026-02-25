@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import type { Entry } from "@/lib/types";
 import { stripMarkdown } from "@/lib/utils";
+import { useDebounce } from "@/lib/use-debounce";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ export default function EntriesListPage() {
 
   // Search & filter
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<string[]>([]);
 
@@ -58,7 +60,7 @@ export default function EntriesListPage() {
         limit: PAGE_SIZE,
         offset: (page - 1) * PAGE_SIZE,
       };
-      if (search.trim()) params.search = search.trim();
+      if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
       if (activeTag) params.tag = activeTag;
 
       const res = await api.get("/entries", { params });
@@ -69,7 +71,7 @@ export default function EntriesListPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, activeTag]);
+  }, [page, debouncedSearch, activeTag]);
 
   // Collect all unique tags from loaded entries for quick filter chips
   useEffect(() => {
@@ -213,7 +215,9 @@ export default function EntriesListPage() {
                   {/* Clickable main content area */}
                   <Link href={`/dashboard/entries/${entry.id}`} className="min-w-0 flex-1">
                     <p className="group-hover:text-primary truncate font-medium transition-colors">
-                      {entry.title}
+                      {entry.title || (
+                        <span className="text-muted-foreground italic">Untitled</span>
+                      )}
                     </p>
                     <p className="text-muted-foreground mt-0.5 text-xs">
                       {format(parseISO(entry.date), "MMM d, yyyy")}

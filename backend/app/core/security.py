@@ -1,3 +1,4 @@
+import asyncio
 from datetime import UTC, datetime, timedelta
 
 import bcrypt
@@ -6,18 +7,26 @@ import jwt
 from app.core.config import settings
 
 
-def hash_password(password: str) -> str:
-    """Hash a plaintext password using bcrypt."""
+def _hash_password_sync(password: str) -> str:
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plaintext password against a bcrypt hash."""
+def _verify_password_sync(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(
         plain_password.encode("utf-8"),
         hashed_password.encode("utf-8"),
     )
+
+
+async def hash_password(password: str) -> str:
+    """Hash a plaintext password using bcrypt (runs in thread to avoid blocking)."""
+    return await asyncio.to_thread(_hash_password_sync, password)
+
+
+async def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a plaintext password against a bcrypt hash (runs in thread)."""
+    return await asyncio.to_thread(_verify_password_sync, plain_password, hashed_password)
 
 
 def create_access_token(user_id: str) -> str:

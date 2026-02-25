@@ -26,14 +26,14 @@ def _eager_options():
 # ------------------------------------------------------------------ tags
 
 
-async def resolve_tags(tag_names: list[str], db: AsyncSession) -> list[Tag]:
-    """Get-or-create Tag rows for a list of tag name strings."""
+async def resolve_tags(tag_names: list[str], user_id: uuid.UUID, db: AsyncSession) -> list[Tag]:
+    """Get-or-create Tag rows for a list of tag name strings, scoped to user."""
     if not tag_names:
         return []
 
     unique_names = list({name.strip().lower() for name in tag_names if name.strip()})
 
-    result = await db.execute(select(Tag).where(Tag.name.in_(unique_names)))
+    result = await db.execute(select(Tag).where(Tag.name.in_(unique_names), Tag.user_id == user_id))
     existing: dict[str, Tag] = {t.name: t for t in result.scalars().all()}
 
     tags: list[Tag] = []
@@ -41,7 +41,7 @@ async def resolve_tags(tag_names: list[str], db: AsyncSession) -> list[Tag]:
         if name in existing:
             tags.append(existing[name])
         else:
-            new_tag = Tag(name=name)
+            new_tag = Tag(name=name, user_id=user_id)
             db.add(new_tag)
             tags.append(new_tag)
 
@@ -105,6 +105,7 @@ async def list_entries(
     db: AsyncSession,
     date_filter: str | None = None,
     tag_filter: str | None = None,
+    search_filter: str | None = None,
     offset: int = 0,
     limit: int = 20,
 ) -> tuple[list[Entry], int]:
@@ -125,6 +126,12 @@ async def list_entries(
             .join(Tag, entry_tags.c.tag_id == Tag.id)
             .where(Tag.name == tag_name)
         )
+
+    if search_filter:
+        pattern = f"%{search_filter}%"
+        search_cond = Entry.title.ilike(pattern) | Entry.content.ilike(pattern)
+        base = base.where(search_cond)
+        count_q = count_q.where(search_cond)
 
     total_result = await db.execute(count_q)
     total = total_result.scalar_one()

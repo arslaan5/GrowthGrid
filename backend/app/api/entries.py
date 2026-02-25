@@ -42,6 +42,7 @@ async def create(
 async def list_all(
     date: date | None = Query(None, description="Filter by date (YYYY-MM-DD)"),
     tag: str | None = Query(None, description="Filter by tag name"),
+    search: str | None = Query(None, description="Search title and content"),
     offset: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=1000),
     current_user: User = Depends(get_current_user),
@@ -53,6 +54,7 @@ async def list_all(
         db=db,
         date_filter=str(date) if date else None,
         tag_filter=tag,
+        search_filter=search,
         offset=offset,
         limit=limit,
     )

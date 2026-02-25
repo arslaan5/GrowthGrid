@@ -2,6 +2,7 @@
 
 import { useEffect, useReducer } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import api from "@/lib/api";
 import type { Summary, HeatmapDay, Entry } from "@/lib/types";
 import { stripMarkdown } from "@/lib/utils";
@@ -20,9 +21,13 @@ import {
   Sparkles,
   Keyboard,
 } from "lucide-react";
-import { format, parseISO } from "date-fns";
-import { Heatmap } from "@/components/heatmap";
+import { format, parseISO, subYears } from "date-fns";
 import { useModLabel } from "@/lib/use-platform";
+
+const Heatmap = dynamic(() => import("@/components/heatmap").then((m) => m.Heatmap), {
+  ssr: false,
+  loading: () => <div className="bg-muted h-32 animate-pulse rounded" />,
+});
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -91,9 +96,13 @@ export default function DashboardPage() {
     let cancelled = false;
     const fetchAll = async () => {
       try {
+        const heatmapStart = format(subYears(new Date(), 1), "yyyy-MM-dd");
+        const heatmapEnd = format(new Date(), "yyyy-MM-dd");
         const [sumRes, heatRes, entryRes] = await Promise.all([
           api.get("/analytics/summary"),
-          api.get("/analytics/heatmap"),
+          api.get("/analytics/heatmap", {
+            params: { start_date: heatmapStart, end_date: heatmapEnd },
+          }),
           api.get("/entries", { params: { limit: 5 } }),
         ]);
         if (!cancelled) {
@@ -265,7 +274,9 @@ export default function DashboardPage() {
                   >
                     <div className="min-w-0 flex-1">
                       <p className="group-hover:text-primary truncate font-medium transition-colors">
-                        {entry.title}
+                        {entry.title || (
+                          <span className="text-muted-foreground italic">Untitled</span>
+                        )}
                       </p>
                       <p className="text-muted-foreground text-xs">
                         {format(parseISO(entry.date), "MMM d, yyyy")}

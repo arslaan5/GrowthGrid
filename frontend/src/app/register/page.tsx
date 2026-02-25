@@ -66,9 +66,12 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
                 className="transition-all duration-200 focus:scale-[1.01]"
               />
+              <p className="text-muted-foreground text-xs">
+                At least 8 characters with one letter and one digit
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm">Confirm Password</Label>
@@ -79,7 +82,7 @@ export default function RegisterPage() {
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
                 className="transition-all duration-200 focus:scale-[1.01]"
               />
             </div>

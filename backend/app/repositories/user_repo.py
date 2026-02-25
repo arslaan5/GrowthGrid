@@ -27,3 +27,15 @@ async def create_user(email: str, hashed_password: str, db: AsyncSession) -> Use
     await db.flush()
     await db.refresh(user)
     return user
+
+
+async def update_password(user: User, hashed_password: str, db: AsyncSession) -> None:
+    """Update the user's hashed password."""
+    user.hashed_password = hashed_password
+    await db.flush()
+
+
+async def delete_user(user: User, db: AsyncSession) -> None:
+    """Delete the user and all associated data (cascade)."""
+    await db.delete(user)
+    await db.flush()

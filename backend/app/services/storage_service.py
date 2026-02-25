@@ -4,18 +4,14 @@ import contextlib
 import uuid
 from io import BytesIO
 
-import boto3
-from botocore.config import Config
 from botocore.exceptions import ClientError
 from fastapi import HTTPException, UploadFile, status
 
+from app.core.b2_client import get_s3_client
 from app.core.config import settings
+from app.core.logging import get_logger
 
-# B2 requires SigV4 and path-style addressing on its S3-compatible endpoint.
-_B2_CLIENT_CONFIG = Config(
-    signature_version="s3v4",
-    s3={"addressing_style": "path"},
-)
+logger = get_logger("storage")
 
 # Maximum file size: 10 MB
 MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -29,17 +25,6 @@ ALLOWED_CONTENT_TYPES = {
     "text/plain",
     "text/markdown",
 }
-
-
-def _get_s3_client():
-    """Create a boto3 S3 client configured for Backblaze B2."""
-    return boto3.client(
-        "s3",
-        endpoint_url=settings.B2_ENDPOINT_URL,
-        aws_access_key_id=settings.B2_KEY_ID,
-        aws_secret_access_key=settings.B2_APPLICATION_KEY,
-        config=_B2_CLIENT_CONFIG,
-    )
 
 
 async def upload_file(file: UploadFile, entry_id: uuid.UUID) -> tuple[str, str]:
@@ -65,7 +50,7 @@ async def upload_file(file: UploadFile, entry_id: uuid.UUID) -> tuple[str, str]:
     unique_prefix = uuid.uuid4().hex[:8]
     object_key = f"entries/{entry_id}/{unique_prefix}_{ext_name}"
 
-    s3 = _get_s3_client()
+    s3 = get_s3_client()
     try:
         s3.upload_fileobj(
             BytesIO(contents),
@@ -74,6 +59,7 @@ async def upload_file(file: UploadFile, entry_id: uuid.UUID) -> tuple[str, str]:
             ExtraArgs={"ContentType": file.content_type},
         )
     except ClientError as exc:
+        logger.error("B2 upload failed for key %s: %s", object_key, exc)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"Failed to upload file to storage: {exc}",
@@ -86,6 +72,19 @@ async def upload_file(file: UploadFile, entry_id: uuid.UUID) -> tuple[str, str]:
 
 async def delete_file(object_key: str) -> None:
     """Delete a file from B2. Silently ignores missing files."""
-    s3 = _get_s3_client()
+    s3 = get_s3_client()
     with contextlib.suppress(ClientError):
         s3.delete_object(Bucket=settings.B2_BUCKET_NAME, Key=object_key)
+
+
+def generate_presigned_url(object_key: str, expires_in: int = 3600) -> str:
+    """Generate a pre-signed download URL for a B2 object.
+
+    The URL is valid for `expires_in` seconds (default 1 hour).
+    """
+    s3 = get_s3_client()
+    return s3.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": settings.B2_BUCKET_NAME, "Key": object_key},
+        ExpiresIn=expires_in,
+    )

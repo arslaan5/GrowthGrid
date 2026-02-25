@@ -1,5 +1,7 @@
 """Tests for security utility functions."""
 
+import pytest
+
 from app.core.security import (
     create_access_token,
     decode_token,
@@ -8,20 +10,23 @@ from app.core.security import (
 )
 
 
-def test_hash_password_returns_hash():
-    hashed = hash_password("testpass123")
+@pytest.mark.asyncio
+async def test_hash_password_returns_hash():
+    hashed = await hash_password("testpass123")
     assert hashed != "testpass123"
     assert hashed.startswith("$2b$")
 
 
-def test_verify_password_correct():
-    hashed = hash_password("mypassword")
-    assert verify_password("mypassword", hashed) is True
+@pytest.mark.asyncio
+async def test_verify_password_correct():
+    hashed = await hash_password("mypassword")
+    assert await verify_password("mypassword", hashed) is True
 
 
-def test_verify_password_incorrect():
-    hashed = hash_password("mypassword")
-    assert verify_password("wrongpassword", hashed) is False
+@pytest.mark.asyncio
+async def test_verify_password_incorrect():
+    hashed = await hash_password("mypassword")
+    assert await verify_password("wrongpassword", hashed) is False
 
 
 def test_create_and_decode_token():

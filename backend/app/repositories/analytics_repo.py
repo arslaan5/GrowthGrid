@@ -3,21 +3,31 @@
 import uuid
 from datetime import date
 
-from sqlalchemy import desc, func, select
+from sqlalchemy import desc, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.entry import Entry
 from app.models.tag import Tag, entry_tags
 
 
-async def get_heatmap_data(user_id: uuid.UUID, db: AsyncSession) -> list[dict]:
-    """Return [{date, count}] for every date the user has entries."""
-    result = await db.execute(
-        select(Entry.date, func.count().label("count"))
-        .where(Entry.user_id == user_id)
-        .group_by(Entry.date)
-        .order_by(Entry.date)
-    )
+async def get_heatmap_data(
+    user_id: uuid.UUID,
+    db: AsyncSession,
+    start_date: date | None = None,
+    end_date: date | None = None,
+) -> list[dict]:
+    """Return [{date, count}] for every date the user has entries.
+
+    Optionally filter to a date range [start_date, end_date] inclusive.
+    """
+    stmt = select(Entry.date, func.count().label("count")).where(Entry.user_id == user_id)
+    if start_date is not None:
+        stmt = stmt.where(Entry.date >= start_date)
+    if end_date is not None:
+        stmt = stmt.where(Entry.date <= end_date)
+    stmt = stmt.group_by(Entry.date).order_by(Entry.date)
+
+    result = await db.execute(stmt)
     return [{"date": row.date, "count": row.count} for row in result.all()]
 
 
@@ -37,12 +47,48 @@ async def get_entries_since(user_id: uuid.UUID, since: date, db: AsyncSession) -
     return result.scalar_one()
 
 
-async def get_distinct_entry_dates(user_id: uuid.UUID, db: AsyncSession) -> list[date]:
-    """Return distinct entry dates for the user, sorted descending."""
-    result = await db.execute(
-        select(Entry.date).where(Entry.user_id == user_id).distinct().order_by(desc(Entry.date))
-    )
-    return [row[0] for row in result.all()]
+async def get_streaks(user_id: uuid.UUID, db: AsyncSession) -> tuple[int, int]:
+    """Compute current and longest streaks entirely in SQL.
+
+    Uses the "islands and gaps" window-function pattern:
+    1. Get distinct entry dates.
+    2. Subtract a row-number offset so consecutive dates share the same group key.
+    3. Count each group → streak length.
+    4. Longest streak = MAX(streak_len).
+    5. Current streak = the streak whose last_date is today or yesterday.
+
+    Returns (current_streak, longest_streak).
+    """
+    query = text("""
+        WITH distinct_dates AS (
+            SELECT DISTINCT date AS d
+            FROM entries
+            WHERE user_id = :user_id
+        ),
+        grouped AS (
+            SELECT
+                d,
+                d - (ROW_NUMBER() OVER (ORDER BY d))::int AS grp
+            FROM distinct_dates
+        ),
+        streaks AS (
+            SELECT
+                COUNT(*) AS streak_len,
+                MAX(d) AS last_date
+            FROM grouped
+            GROUP BY grp
+        )
+        SELECT
+            COALESCE(MAX(streak_len), 0)::int AS longest_streak,
+            COALESCE(
+                MAX(CASE WHEN last_date >= CURRENT_DATE - 1 THEN streak_len END),
+                0
+            )::int AS current_streak
+        FROM streaks
+    """)
+    result = await db.execute(query, {"user_id": user_id})
+    row = result.one()
+    return row.current_streak, row.longest_streak
 
 
 async def get_most_used_tag(user_id: uuid.UUID, db: AsyncSession) -> str | None:
