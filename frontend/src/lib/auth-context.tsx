@@ -23,12 +23,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
+    // #region agent log
+    fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:25',message:'refresh() called',data:{loading,user:user?.id||null,error},timestamp:Date.now(),runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     try {
       setError(null);
       const { data } = await api.get<User>("/auth/me");
+      // #region agent log
+      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:29',message:'/auth/me success',data:{userId:data?.id||null,email:data?.email||null,hasData:!!data},timestamp:Date.now(),runId:'run1',hypothesisId:'B,C'})}).catch(()=>{});
+      // #endregion
       setUser(data);
+      // #region agent log
+      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:30',message:'setUser() called with data',data:{userId:data?.id||null,email:data?.email||null},timestamp:Date.now(),runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
     } catch (err: unknown) {
       setUser(null);
+      // #region agent log
+      const status = err && typeof err === "object" && "response" in err ? (err as { response?: { status?: number } }).response?.status : null;
+      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:31',message:'/auth/me error',data:{status,errorType:err?.constructor?.name||'unknown'},timestamp:Date.now(),runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       // Distinguish network / server errors from a normal 401
       if (err && typeof err === "object" && "response" in err) {
         const status = (err as { response?: { status?: number } }).response?.status;
@@ -42,6 +55,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } finally {
       setLoading(false);
+      // #region agent log
+      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:57',message:'refresh() completed',data:{loading:false},timestamp:Date.now(),runId:'run1',hypothesisId:'B,C'})}).catch(()=>{});
+      // #endregion
     }
   }, []);
 
@@ -50,8 +66,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const login = async (email: string, password: string) => {
-    await api.post("/auth/login", { email, password });
-    await refresh();
+    // #region agent log
+    fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:52',message:'login() called',data:{email},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    try {
+      const loginResponse = await api.post("/auth/login", { email, password });
+      // #region agent log
+      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:54',message:'/auth/login success',data:{status:loginResponse?.status,hasCookies:!!loginResponse?.headers?.['set-cookie']},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      await refresh();
+      // #region agent log
+      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:77',message:'login() completed, refresh() finished',data:{},timestamp:Date.now(),runId:'run1',hypothesisId:'A,B'})}).catch(()=>{});
+      // #endregion
+    } catch (err) {
+      // #region agent log
+      const status = err && typeof err === "object" && "response" in err ? (err as { response?: { status?: number } }).response?.status : null;
+      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:56',message:'/auth/login error',data:{status},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      throw err;
+    }
   };
 
   const register = async (email: string, password: string) => {
