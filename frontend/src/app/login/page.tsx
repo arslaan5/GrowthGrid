@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Navigate only once the auth context has confirmed the user is set.
+  // Navigate immediately if user is already authenticated - don't wait for useEffect
   // Use window.location for hard navigation to ensure it works in production.
   useEffect(() => {
     // #region agent log
@@ -28,8 +28,14 @@ export default function LoginPage() {
       fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:23',message:'window.location.href=/dashboard called',data:{userId:user?.id},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
       // #endregion
       window.location.href = "/dashboard";
+      return;
     }
   }, [user, authLoading]);
+
+  // Don't render login form if user is authenticated (prevents flash)
+  if (!authLoading && user) {
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
