@@ -8,8 +8,19 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
+from app.core.limiter import limiter
 from app.db.session import get_db
 from app.main import app
+
+
+# ---------------------------------------------------------------------------
+# Disable rate limiting for all tests.
+# ---------------------------------------------------------------------------
+@pytest.fixture(autouse=True)
+def disable_rate_limit():
+    limiter.enabled = False
+    yield
+    limiter.enabled = True
 
 
 # ---------------------------------------------------------------------------

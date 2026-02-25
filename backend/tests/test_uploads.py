@@ -34,7 +34,7 @@ async def _register_login_create_entry(client: AsyncClient) -> str:
 # ----------------------------- Upload
 
 
-@patch("app.services.storage_service._get_s3_client")
+@patch("app.services.storage_service.get_s3_client")
 async def test_upload_file_success(mock_s3_factory, client: AsyncClient):
     mock_s3 = MagicMock()
     mock_s3_factory.return_value = mock_s3
@@ -57,7 +57,7 @@ async def test_upload_file_success(mock_s3_factory, client: AsyncClient):
     mock_s3.upload_fileobj.assert_called_once()
 
 
-@patch("app.services.storage_service._get_s3_client")
+@patch("app.services.storage_service.get_s3_client")
 async def test_upload_disallowed_type(mock_s3_factory, client: AsyncClient):
     mock_s3 = MagicMock()
     mock_s3_factory.return_value = mock_s3
@@ -86,7 +86,7 @@ async def test_upload_unauthenticated(client: AsyncClient):
     assert response.status_code == 401
 
 
-@patch("app.services.storage_service._get_s3_client")
+@patch("app.services.storage_service.get_s3_client")
 async def test_upload_to_nonexistent_entry(mock_s3_factory, client: AsyncClient):
     mock_s3 = MagicMock()
     mock_s3_factory.return_value = mock_s3
@@ -115,7 +115,7 @@ async def test_upload_to_nonexistent_entry(mock_s3_factory, client: AsyncClient)
 # ----------------------------- Attachment appears on entry
 
 
-@patch("app.services.storage_service._get_s3_client")
+@patch("app.services.storage_service.get_s3_client")
 async def test_attachment_visible_on_entry(mock_s3_factory, client: AsyncClient):
     mock_s3 = MagicMock()
     mock_s3_factory.return_value = mock_s3
@@ -139,7 +139,7 @@ async def test_attachment_visible_on_entry(mock_s3_factory, client: AsyncClient)
 # ----------------------------- Delete attachment
 
 
-@patch("app.services.storage_service._get_s3_client")
+@patch("app.services.storage_service.get_s3_client")
 async def test_delete_attachment(mock_s3_factory, client: AsyncClient):
     mock_s3 = MagicMock()
     mock_s3_factory.return_value = mock_s3
@@ -166,7 +166,7 @@ async def test_delete_attachment(mock_s3_factory, client: AsyncClient):
     mock_s3.delete_object.assert_called_once()
 
 
-@patch("app.services.storage_service._get_s3_client")
+@patch("app.services.storage_service.get_s3_client")
 async def test_delete_attachment_not_found(mock_s3_factory, client: AsyncClient):
     mock_s3 = MagicMock()
     mock_s3_factory.return_value = mock_s3
