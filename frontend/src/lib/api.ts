@@ -6,6 +6,19 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Add request interceptor to log cookie sending
+api.interceptors.request.use(
+  (config) => {
+    // #region agent log
+    if (typeof window !== "undefined") {
+      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:request',message:'API request',data:{url:config.url,withCredentials:config.withCredentials,hasCookieHeader:!!config.headers?.Cookie},timestamp:Date.now(),runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    }
+    // #endregion
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Redirect to login on 401 (expired / missing token).
 // Exclude auth endpoints that naturally return 401.
 api.interceptors.response.use(

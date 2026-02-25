@@ -74,25 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // #region agent log
       fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:54',message:'/auth/login success',data:{status:loginResponse?.status,hasCookies:!!loginResponse?.headers?.['set-cookie']},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{});
       // #endregion
-      // Retry refresh up to 3 times if it fails with 401 (cookie might not be set yet)
-      let retries = 3;
-      while (retries > 0) {
-        try {
-          await refresh();
-          break;
-        } catch (err: unknown) {
-          const status = err && typeof err === "object" && "response" in err ? (err as { response?: { status?: number } }).response?.status : null;
-          if (status === 401 && retries > 1) {
-            // #region agent log
-            fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:77',message:'/auth/me returned 401, retrying',data:{retriesLeft:retries-1},timestamp:Date.now(),runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-            // #endregion
-            retries--;
-            await new Promise(resolve => setTimeout(resolve, 200));
-            continue;
-          }
-          throw err;
-        }
-      }
+      await refresh();
       // #region agent log
       fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth-context.tsx:77',message:'login() completed, refresh() finished',data:{},timestamp:Date.now(),runId:'run1',hypothesisId:'A,B'})}).catch(()=>{});
       // #endregion
