@@ -7,13 +7,10 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("access_token")?.value;
 
-  // If the user is NOT authenticated and trying to access a protected route
-  if (!token && !PUBLIC_PATHS.includes(pathname) && pathname !== "/") {
-    const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // If the user IS authenticated and visiting login/register, send to dashboard
+  // Only redirect authenticated users away from login/register pages.
+  // Don't redirect unauthenticated users from protected routes - let client-side
+  // auth checks handle that. This prevents issues when the cookie is set by
+  // a different domain (API) and the middleware can't see it.
   if (token && PUBLIC_PATHS.includes(pathname)) {
     const dashboardUrl = new URL("/dashboard", request.url);
     return NextResponse.redirect(dashboardUrl);
