@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
@@ -11,12 +11,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 
 export default function RegisterPage() {
-  const { register } = useAuth();
+  const { register, user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Navigate only once the auth context confirms user is set.
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace("/dashboard");
+    }
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +35,7 @@ export default function RegisterPage() {
     try {
       await register(email, password);
       toast.success("Account created! Welcome to GrowthGrid.");
-      router.push("/dashboard");
+      // Navigation is handled by the useEffect above once user state is set.
     } catch {
       toast.error("Registration failed — email may already be in use");
     } finally {
