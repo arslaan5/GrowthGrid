@@ -25,6 +25,11 @@ class Settings(BaseSettings):
 
     # App
     CORS_ORIGINS: str = "http://localhost:3000"
+    ENV: str = "development"  # set to "production" in prod
+
+    @property
+    def is_production(self) -> bool:
+        return self.ENV.lower() == "production"
 
     @property
     def DATABASE_URL(self) -> str:  # noqa: N802 — keep uppercase to match pydantic-settings convention

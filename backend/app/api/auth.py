@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.limiter import limiter
 from app.core.security import create_access_token
 from app.db.session import get_db
@@ -41,8 +42,8 @@ async def login(
         key="access_token",
         value=token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=settings.is_production,
+        samesite="none" if settings.is_production else "lax",
         max_age=7 * 24 * 60 * 60,  # 7 days
     )
 
@@ -55,8 +56,8 @@ async def logout(response: Response):
     response.delete_cookie(
         key="access_token",
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=settings.is_production,
+        samesite="none" if settings.is_production else "lax",
     )
     return {"message": "Logged out successfully"}
 
@@ -89,6 +90,6 @@ async def remove_account(
     response.delete_cookie(
         key="access_token",
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=settings.is_production,
+        samesite="none" if settings.is_production else "lax",
     )
