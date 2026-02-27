@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     # App
     CORS_ORIGINS: str = "http://localhost:3000"
-    ENV: str = "production"  # override to "development" in local .env
+    ENV: str = "development"  # set to "production" in prod
 
     @property
     def is_production(self) -> bool:
