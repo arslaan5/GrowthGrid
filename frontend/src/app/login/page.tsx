@@ -20,13 +20,7 @@ export default function LoginPage() {
   // Navigate immediately if user is already authenticated - don't wait for useEffect
   // Use window.location for hard navigation to ensure it works in production.
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:21',message:'redirect useEffect triggered',data:{authLoading,hasUser:!!user,userId:user?.id||null},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
     if (!authLoading && user) {
-      // #region agent log
-      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:23',message:'window.location.href=/dashboard called',data:{userId:user?.id},timestamp:Date.now(),runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       window.location.href = "/dashboard";
       return;
     }
@@ -40,20 +34,11 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // #region agent log
-    fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:27',message:'handleSubmit called',data:{email},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     try {
       await login(email, password);
-      // #region agent log
-      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:32',message:'login() returned successfully',data:{user:user?.id||null},timestamp:Date.now(),runId:'run1',hypothesisId:'A,B,C'})}).catch(()=>{});
-      // #endregion
       toast.success("Welcome back!");
       // Navigation is handled by the useEffect above once user state is set.
     } catch {
-      // #region agent log
-      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'login/page.tsx:34',message:'login() threw error',data:{},timestamp:Date.now(),runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       toast.error("Invalid email or password");
     } finally {
       setLoading(false);

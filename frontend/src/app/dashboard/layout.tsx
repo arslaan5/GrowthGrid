@@ -18,13 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // useAuth is a client-side context hook; router.replace is the correct
   // client-component equivalent of server-side redirect().
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard/layout.tsx:20',message:'dashboard layout useEffect triggered',data:{loading,hasUser:!!user,userId:user?.id||null,error},timestamp:Date.now(),runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
-    if (!loading && !user && !error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7250/ingest/31bbd6ce-720a-4f7a-952f-43db051584c6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard/layout.tsx:22',message:'dashboard redirecting to /login',data:{},timestamp:Date.now(),runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-      // #endregion
+    if (!loading && !user) {
       router.replace("/login");
     }
   }, [user, loading, error, router]);
