@@ -284,13 +284,17 @@ export default function DashboardPage() {
                       <p className="text-muted-foreground mt-0.5 line-clamp-1 text-xs">
                         {stripMarkdown(entry.content).slice(0, 100)}
                       </p>
+                      {entry.tags.length > 0 && (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {entry.tags.slice(0, 3).map((t) => (
+                            <Badge key={t.id} variant="secondary" className="text-[10px]">
+                              {t.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="ml-3 flex shrink-0 items-center gap-2">
-                      {entry.tags.slice(0, 3).map((t) => (
-                        <Badge key={t.id} variant="secondary" className="text-[10px]">
-                          {t.name}
-                        </Badge>
-                      ))}
+                    <div className="ml-3 shrink-0">
                       <ArrowRight className="text-muted-foreground h-3.5 w-3.5 opacity-0 transition-all duration-150 group-hover:translate-x-0.5 group-hover:opacity-100" />
                     </div>
                   </Link>

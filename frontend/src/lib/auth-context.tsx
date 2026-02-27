@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(null);
       const { data } = await api.get<User>("/auth/me");
       setUser(data);
-      } catch (err: unknown) {
+    } catch (err: unknown) {
       setUser(null);
       // Distinguish network / server errors from a normal 401
       if (err && typeof err === "object" && "response" in err) {
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } finally {
       setLoading(false);
-      }
+    }
   }, []);
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const loginResponse = await api.post("/auth/login", { email, password });
       await refresh();
-      } catch (err) {
+    } catch (err) {
       throw err;
     }
   };
