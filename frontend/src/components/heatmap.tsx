@@ -1,11 +1,11 @@
 "use client";
 
+import React, { useState, useMemo, useEffect } from "react";
 import CalendarHeatmap, { type ReactCalendarHeatmapValue } from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
 import { subYears, subMonths, format } from "date-fns";
 import type { HeatmapDay } from "@/lib/types";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useState, useMemo, useEffect } from "react";
 
 type HeatmapValue = ReactCalendarHeatmapValue<string> & { count?: number };
 
@@ -14,16 +14,18 @@ interface HeatmapProps {
 }
 
 function useIsMobile(breakpoint = 640): boolean {
-  const [isMobile, setIsMobile] = useState(
-    () =>
-      typeof window !== "undefined" && window.matchMedia(`(max-width: ${breakpoint - 1}px)`).matches
-  );
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
+
+    const update = () => setIsMobile(mql.matches);
+    update(); // set on mount
+
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
   }, [breakpoint]);
+
   return isMobile;
 }
 
@@ -34,8 +36,8 @@ const SCALE_COLORS = {
   4: "oklch(0.45 0.22 142)",
 } as const;
 
-export function Heatmap({ data }: HeatmapProps) {
-  const today = new Date();
+export const Heatmap = React.memo(function Heatmap({ data }: HeatmapProps) {
+  const today = useMemo(() => new Date(), []);
   const isMobile = useIsMobile();
 
   // Desktop: full year. Mobile: last 3 months.
@@ -204,4 +206,4 @@ export function Heatmap({ data }: HeatmapProps) {
       </div>
     </div>
   );
-}
+});
