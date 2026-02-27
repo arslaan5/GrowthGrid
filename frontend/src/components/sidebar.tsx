@@ -38,7 +38,7 @@ export function Sidebar() {
           const isEntriesExact = item.href === "/dashboard/entries";
           const finalActive = isEntriesExact ? pathname === "/dashboard/entries" : active;
           return (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} prefetch={false}>
               <span
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
